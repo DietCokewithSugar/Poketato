@@ -1,0 +1,1333 @@
+{
+ "species": [
+  {
+   "dex": 4,
+   "id": "charmander",
+   "nameCn": "小火龙",
+   "types": [
+    "fire"
+   ],
+   "texture": "004_charmander",
+   "atlasW": 1504,
+   "atlasH": 512,
+   "shadow": 1,
+   "hover": false,
+   "anims": [
+    {
+     "name": "Idle",
+     "x": 800,
+     "y": 0,
+     "w": 32,
+     "h": 40,
+     "frames": 4,
+     "rows": 8,
+     "durations": [
+      12,
+      8,
+      8,
+      8
+     ],
+     "ax": 15.5,
+     "ay": 23.5
+    },
+    {
+     "name": "Walk",
+     "x": 1248,
+     "y": 0,
+     "w": 32,
+     "h": 32,
+     "frames": 4,
+     "rows": 8,
+     "durations": [
+      6,
+      8,
+      6,
+      8
+     ],
+     "ax": 15.5,
+     "ay": 19.5
+    },
+    {
+     "name": "Attack",
+     "x": 0,
+     "y": 0,
+     "w": 64,
+     "h": 64,
+     "frames": 11,
+     "rows": 8,
+     "durations": [
+      2,
+      2,
+      4,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 31.5,
+     "ay": 35.5
+    },
+    {
+     "name": "Shoot",
+     "x": 928,
+     "y": 0,
+     "w": 32,
+     "h": 40,
+     "frames": 10,
+     "rows": 8,
+     "durations": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 16.5,
+     "ay": 23.5
+    },
+    {
+     "name": "Hurt",
+     "x": 704,
+     "y": 0,
+     "w": 48,
+     "h": 56,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 23.5,
+     "ay": 29.5
+    },
+    {
+     "name": "Faint",
+     "x": 1376,
+     "y": 0,
+     "w": 32,
+     "h": 32,
+     "frames": 4,
+     "rows": 8,
+     "durations": [
+      8,
+      12,
+      4,
+      10
+     ],
+     "ax": 15.5,
+     "ay": 19.5
+    }
+   ]
+  },
+  {
+   "dex": 7,
+   "id": "squirtle",
+   "nameCn": "杰尼龟",
+   "types": [
+    "water"
+   ],
+   "texture": "007_squirtle",
+   "atlasW": 1704,
+   "atlasH": 576,
+   "shadow": 1,
+   "hover": false,
+   "anims": [
+    {
+     "name": "Idle",
+     "x": 720,
+     "y": 0,
+     "w": 32,
+     "h": 32,
+     "frames": 8,
+     "rows": 8,
+     "durations": [
+      30,
+      2,
+      2,
+      4,
+      4,
+      4,
+      2,
+      2
+     ],
+     "ax": 15.5,
+     "ay": 19.5
+    },
+    {
+     "name": "Walk",
+     "x": 976,
+     "y": 0,
+     "w": 32,
+     "h": 32,
+     "frames": 4,
+     "rows": 8,
+     "durations": [
+      12,
+      8,
+      12,
+      8
+     ],
+     "ax": 15.5,
+     "ay": 19.5
+    },
+    {
+     "name": "Attack",
+     "x": 0,
+     "y": 0,
+     "w": 64,
+     "h": 72,
+     "frames": 10,
+     "rows": 8,
+     "durations": [
+      2,
+      4,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 31.5,
+     "ay": 38.5
+    },
+    {
+     "name": "Shoot",
+     "x": 1104,
+     "y": 0,
+     "w": 40,
+     "h": 32,
+     "frames": 11,
+     "rows": 8,
+     "durations": [
+      2,
+      6,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 19.5,
+     "ay": 18.5
+    },
+    {
+     "name": "Hurt",
+     "x": 640,
+     "y": 0,
+     "w": 40,
+     "h": 56,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 19.5,
+     "ay": 29.5
+    },
+    {
+     "name": "Faint",
+     "x": 1544,
+     "y": 0,
+     "w": 40,
+     "h": 32,
+     "frames": 4,
+     "rows": 8,
+     "durations": [
+      8,
+      12,
+      4,
+      10
+     ],
+     "ax": 19.5,
+     "ay": 19.5
+    }
+   ]
+  },
+  {
+   "dex": 1,
+   "id": "bulbasaur",
+   "nameCn": "妙蛙种子",
+   "types": [
+    "grass",
+    "poison"
+   ],
+   "texture": "001_bulbasaur",
+   "atlasW": 1440,
+   "atlasH": 576,
+   "shadow": 1,
+   "hover": false,
+   "anims": [
+    {
+     "name": "Idle",
+     "x": 784,
+     "y": 0,
+     "w": 32,
+     "h": 40,
+     "frames": 3,
+     "rows": 8,
+     "durations": [
+      40,
+      6,
+      6
+     ],
+     "ax": 15.5,
+     "ay": 23.5
+    },
+    {
+     "name": "Walk",
+     "x": 880,
+     "y": 0,
+     "w": 40,
+     "h": 40,
+     "frames": 6,
+     "rows": 8,
+     "durations": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+     ],
+     "ax": 19.5,
+     "ay": 23.5
+    },
+    {
+     "name": "Attack",
+     "x": 0,
+     "y": 0,
+     "w": 64,
+     "h": 72,
+     "frames": 11,
+     "rows": 8,
+     "durations": [
+      4,
+      2,
+      4,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      4
+     ],
+     "ax": 31.5,
+     "ay": 39.5
+    },
+    {
+     "name": "Shoot",
+     "x": 1120,
+     "y": 0,
+     "w": 32,
+     "h": 32,
+     "frames": 6,
+     "rows": 8,
+     "durations": [
+      12,
+      4,
+      4,
+      4,
+      2,
+      2
+     ],
+     "ax": 15.5,
+     "ay": 19.5
+    },
+    {
+     "name": "Hurt",
+     "x": 704,
+     "y": 0,
+     "w": 40,
+     "h": 56,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 19.5,
+     "ay": 29.5
+    },
+    {
+     "name": "Faint",
+     "x": 1312,
+     "y": 0,
+     "w": 32,
+     "h": 24,
+     "frames": 4,
+     "rows": 8,
+     "durations": [
+      8,
+      12,
+      4,
+      10
+     ],
+     "ax": 15.5,
+     "ay": 15.5
+    }
+   ]
+  },
+  {
+   "dex": 25,
+   "id": "pikachu",
+   "nameCn": "皮卡丘",
+   "types": [
+    "electric"
+   ],
+   "texture": "025_pikachu",
+   "atlasW": 1864,
+   "atlasH": 640,
+   "shadow": 1,
+   "hover": false,
+   "anims": [
+    {
+     "name": "Idle",
+     "x": 896,
+     "y": 0,
+     "w": 40,
+     "h": 56,
+     "frames": 6,
+     "rows": 8,
+     "durations": [
+      40,
+      2,
+      3,
+      3,
+      3,
+      2
+     ],
+     "ax": 19.5,
+     "ay": 31.5
+    },
+    {
+     "name": "Walk",
+     "x": 1576,
+     "y": 0,
+     "w": 32,
+     "h": 40,
+     "frames": 4,
+     "rows": 8,
+     "durations": [
+      8,
+      10,
+      8,
+      10
+     ],
+     "ax": 15.5,
+     "ay": 23.5
+    },
+    {
+     "name": "Attack",
+     "x": 0,
+     "y": 0,
+     "w": 80,
+     "h": 80,
+     "frames": 10,
+     "rows": 8,
+     "durations": [
+      2,
+      4,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      4
+     ],
+     "ax": 39.5,
+     "ay": 42.5
+    },
+    {
+     "name": "Shoot",
+     "x": 1136,
+     "y": 0,
+     "w": 40,
+     "h": 56,
+     "frames": 11,
+     "rows": 8,
+     "durations": [
+      1,
+      2,
+      6,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 19.5,
+     "ay": 30.5
+    },
+    {
+     "name": "Hurt",
+     "x": 800,
+     "y": 0,
+     "w": 48,
+     "h": 64,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 23.5,
+     "ay": 32.5
+    },
+    {
+     "name": "Faint",
+     "x": 1704,
+     "y": 0,
+     "w": 40,
+     "h": 40,
+     "frames": 4,
+     "rows": 8,
+     "durations": [
+      8,
+      12,
+      4,
+      10
+     ],
+     "ax": 19.5,
+     "ay": 23.5
+    }
+   ]
+  },
+  {
+   "dex": 10,
+   "id": "caterpie",
+   "nameCn": "绿毛虫",
+   "types": [
+    "bug"
+   ],
+   "texture": "010_caterpie",
+   "atlasW": 1568,
+   "atlasH": 512,
+   "shadow": 0,
+   "hover": false,
+   "anims": [
+    {
+     "name": "Idle",
+     "x": 1152,
+     "y": 0,
+     "w": 32,
+     "h": 32,
+     "frames": 10,
+     "rows": 8,
+     "durations": [
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      4,
+      10,
+      4
+     ],
+     "ax": 15.5,
+     "ay": 19.5
+    },
+    {
+     "name": "Walk",
+     "x": 1472,
+     "y": 0,
+     "w": 32,
+     "h": 32,
+     "frames": 3,
+     "rows": 8,
+     "durations": [
+      10,
+      10,
+      10
+     ],
+     "ax": 15.5,
+     "ay": 19.5
+    },
+    {
+     "name": "Attack",
+     "x": 0,
+     "y": 0,
+     "w": 64,
+     "h": 64,
+     "frames": 11,
+     "rows": 8,
+     "durations": [
+      4,
+      2,
+      4,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      4
+     ],
+     "ax": 31.5,
+     "ay": 35.5
+    },
+    {
+     "name": "Shoot",
+     "x": 896,
+     "y": 0,
+     "w": 32,
+     "h": 40,
+     "frames": 8,
+     "rows": 8,
+     "durations": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1,
+      6
+     ],
+     "ax": 15.5,
+     "ay": 23.5
+    },
+    {
+     "name": "Hurt",
+     "x": 704,
+     "y": 0,
+     "w": 48,
+     "h": 56,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 23.5,
+     "ay": 29.5
+    },
+    {
+     "name": "Faint",
+     "x": 800,
+     "y": 0,
+     "w": 48,
+     "h": 56,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 23.5,
+     "ay": 29.5
+    }
+   ]
+  },
+  {
+   "dex": 19,
+   "id": "rattata",
+   "nameCn": "小拉达",
+   "types": [
+    "normal"
+   ],
+   "texture": "019_rattata",
+   "atlasW": 1872,
+   "atlasH": 576,
+   "shadow": 1,
+   "hover": false,
+   "anims": [
+    {
+     "name": "Idle",
+     "x": 1616,
+     "y": 0,
+     "w": 32,
+     "h": 32,
+     "frames": 8,
+     "rows": 8,
+     "durations": [
+      40,
+      2,
+      2,
+      2,
+      4,
+      2,
+      2,
+      2
+     ],
+     "ax": 15.5,
+     "ay": 19.5
+    },
+    {
+     "name": "Walk",
+     "x": 864,
+     "y": 0,
+     "w": 48,
+     "h": 40,
+     "frames": 7,
+     "rows": 8,
+     "durations": [
+      6,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+     ],
+     "ax": 23.5,
+     "ay": 23.5
+    },
+    {
+     "name": "Attack",
+     "x": 0,
+     "y": 0,
+     "w": 64,
+     "h": 72,
+     "frames": 10,
+     "rows": 8,
+     "durations": [
+      2,
+      4,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 31.5,
+     "ay": 38.5
+    },
+    {
+     "name": "Shoot",
+     "x": 1200,
+     "y": 0,
+     "w": 32,
+     "h": 40,
+     "frames": 13,
+     "rows": 8,
+     "durations": [
+      2,
+      2,
+      4,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 15.5,
+     "ay": 22.5
+    },
+    {
+     "name": "Hurt",
+     "x": 640,
+     "y": 0,
+     "w": 56,
+     "h": 56,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 27.5,
+     "ay": 29.5
+    },
+    {
+     "name": "Faint",
+     "x": 752,
+     "y": 0,
+     "w": 56,
+     "h": 56,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 27.5,
+     "ay": 29.5
+    }
+   ]
+  },
+  {
+   "dex": 16,
+   "id": "pidgey",
+   "nameCn": "波波",
+   "types": [
+    "normal",
+    "flying"
+   ],
+   "texture": "016_pidgey",
+   "atlasW": 1664,
+   "atlasH": 576,
+   "shadow": 0,
+   "hover": false,
+   "anims": [
+    {
+     "name": "Idle",
+     "x": 1256,
+     "y": 0,
+     "w": 24,
+     "h": 40,
+     "frames": 5,
+     "rows": 8,
+     "durations": [
+      30,
+      4,
+      4,
+      4,
+      4
+     ],
+     "ax": 11.5,
+     "ay": 23.5
+    },
+    {
+     "name": "Walk",
+     "x": 1376,
+     "y": 0,
+     "w": 32,
+     "h": 32,
+     "frames": 5,
+     "rows": 8,
+     "durations": [
+      6,
+      4,
+      4,
+      4,
+      4
+     ],
+     "ax": 15.5,
+     "ay": 19.5
+    },
+    {
+     "name": "Attack",
+     "x": 0,
+     "y": 0,
+     "w": 64,
+     "h": 72,
+     "frames": 14,
+     "rows": 8,
+     "durations": [
+      2,
+      2,
+      2,
+      4,
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 31.5,
+     "ay": 39.5
+    },
+    {
+     "name": "Shoot",
+     "x": 896,
+     "y": 0,
+     "w": 24,
+     "h": 48,
+     "frames": 11,
+     "rows": 8,
+     "durations": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      2,
+      1
+     ],
+     "ax": 11.5,
+     "ay": 27.5
+    },
+    {
+     "name": "Hurt",
+     "x": 1160,
+     "y": 0,
+     "w": 48,
+     "h": 48,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 23.5,
+     "ay": 24.5
+    },
+    {
+     "name": "Faint",
+     "x": 1536,
+     "y": 0,
+     "w": 32,
+     "h": 24,
+     "frames": 4,
+     "rows": 8,
+     "durations": [
+      8,
+      12,
+      4,
+      10
+     ],
+     "ax": 15.5,
+     "ay": 15.5
+    }
+   ]
+  },
+  {
+   "dex": 41,
+   "id": "zubat",
+   "nameCn": "超音蝠",
+   "types": [
+    "poison",
+    "flying"
+   ],
+   "texture": "041_zubat",
+   "atlasW": 1944,
+   "atlasH": 640,
+   "shadow": 0,
+   "hover": true,
+   "anims": [
+    {
+     "name": "Idle",
+     "x": 792,
+     "y": 0,
+     "w": 32,
+     "h": 56,
+     "frames": 8,
+     "rows": 8,
+     "durations": [
+      10,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      8
+     ],
+     "ax": 15.5,
+     "ay": 31.5
+    },
+    {
+     "name": "Walk",
+     "x": 1048,
+     "y": 0,
+     "w": 32,
+     "h": 56,
+     "frames": 8,
+     "rows": 8,
+     "durations": [
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6,
+      6
+     ],
+     "ax": 15.5,
+     "ay": 31.5
+    },
+    {
+     "name": "Attack",
+     "x": 0,
+     "y": 0,
+     "w": 72,
+     "h": 80,
+     "frames": 11,
+     "rows": 8,
+     "durations": [
+      2,
+      3,
+      4,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 35.5,
+     "ay": 42.5
+    },
+    {
+     "name": "Shoot",
+     "x": 1304,
+     "y": 0,
+     "w": 32,
+     "h": 56,
+     "frames": 15,
+     "rows": 8,
+     "durations": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 15.5,
+     "ay": 31.5
+    },
+    {
+     "name": "Hurt",
+     "x": 1784,
+     "y": 0,
+     "w": 40,
+     "h": 48,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 19.5,
+     "ay": 25.5
+    },
+    {
+     "name": "Faint",
+     "x": 1864,
+     "y": 0,
+     "w": 40,
+     "h": 48,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 19.5,
+     "ay": 25.5
+    }
+   ]
+  },
+  {
+   "dex": 43,
+   "id": "oddish",
+   "nameCn": "走路草",
+   "types": [
+    "grass",
+    "poison"
+   ],
+   "texture": "043_oddish",
+   "atlasW": 1616,
+   "atlasH": 960,
+   "shadow": 0,
+   "hover": false,
+   "anims": [
+    {
+     "name": "Idle",
+     "x": 1304,
+     "y": 0,
+     "w": 24,
+     "h": 40,
+     "frames": 5,
+     "rows": 8,
+     "durations": [
+      30,
+      4,
+      4,
+      4,
+      4
+     ],
+     "ax": 11.5,
+     "ay": 23.5
+    },
+    {
+     "name": "Walk",
+     "x": 1424,
+     "y": 0,
+     "w": 24,
+     "h": 40,
+     "frames": 8,
+     "rows": 8,
+     "durations": [
+      8,
+      4,
+      8,
+      6,
+      8,
+      4,
+      8,
+      6
+     ],
+     "ax": 11.5,
+     "ay": 23.5
+    },
+    {
+     "name": "Attack",
+     "x": 0,
+     "y": 0,
+     "w": 72,
+     "h": 80,
+     "frames": 15,
+     "rows": 8,
+     "durations": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 35.5,
+     "ay": 43.5
+    },
+    {
+     "name": "Shoot",
+     "x": 0,
+     "y": 640,
+     "w": 48,
+     "h": 40,
+     "frames": 10,
+     "rows": 8,
+     "durations": [
+      2,
+      2,
+      6,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 23.5,
+     "ay": 22.5
+    },
+    {
+     "name": "Hurt",
+     "x": 1080,
+     "y": 0,
+     "w": 56,
+     "h": 48,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 27.5,
+     "ay": 25.5
+    },
+    {
+     "name": "Faint",
+     "x": 1192,
+     "y": 0,
+     "w": 56,
+     "h": 48,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 27.5,
+     "ay": 25.5
+    }
+   ]
+  },
+  {
+   "dex": 15,
+   "id": "beedrill",
+   "nameCn": "大针蜂",
+   "types": [
+    "bug",
+    "poison"
+   ],
+   "texture": "015_beedrill",
+   "atlasW": 2016,
+   "atlasH": 1024,
+   "shadow": 1,
+   "hover": true,
+   "anims": [
+    {
+     "name": "Idle",
+     "x": 0,
+     "y": 640,
+     "w": 32,
+     "h": 48,
+     "frames": 4,
+     "rows": 8,
+     "durations": [
+      4,
+      4,
+      4,
+      4
+     ],
+     "ax": 15.5,
+     "ay": 27.5
+    },
+    {
+     "name": "Walk",
+     "x": 128,
+     "y": 640,
+     "w": 32,
+     "h": 48,
+     "frames": 4,
+     "rows": 8,
+     "durations": [
+      4,
+      4,
+      4,
+      4
+     ],
+     "ax": 15.5,
+     "ay": 27.5
+    },
+    {
+     "name": "Attack",
+     "x": 0,
+     "y": 0,
+     "w": 64,
+     "h": 80,
+     "frames": 18,
+     "rows": 8,
+     "durations": [
+      2,
+      2,
+      4,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      1
+     ],
+     "ax": 31.5,
+     "ay": 42.5
+    },
+    {
+     "name": "Shoot",
+     "x": 1344,
+     "y": 0,
+     "w": 48,
+     "h": 56,
+     "frames": 14,
+     "rows": 8,
+     "durations": [
+      2,
+      2,
+      2,
+      2,
+      4,
+      1,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+     ],
+     "ax": 23.5,
+     "ay": 29.5
+    },
+    {
+     "name": "Hurt",
+     "x": 1152,
+     "y": 0,
+     "w": 48,
+     "h": 64,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 23.5,
+     "ay": 33.5
+    },
+    {
+     "name": "Faint",
+     "x": 1248,
+     "y": 0,
+     "w": 48,
+     "h": 64,
+     "frames": 2,
+     "rows": 8,
+     "durations": [
+      2,
+      8
+     ],
+     "ax": 23.5,
+     "ay": 33.5
+    }
+   ]
+  }
+ ]
+}
