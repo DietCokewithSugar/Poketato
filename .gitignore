@@ -1,0 +1,30 @@
+# Unity generated
+/unity/[Ll]ibrary/
+/unity/[Tt]emp/
+/unity/[Oo]bj/
+/unity/[Bb]uild/
+/unity/[Bb]uilds/
+/unity/[Ll]ogs/
+/unity/[Uu]ser[Ss]ettings/
+/unity/[Mm]emoryCaptures/
+/unity/[Rr]ecordings/
+/unity/*.csproj
+/unity/*.sln
+/unity/*.slnx
+/unity/.vs/
+/unity/.vscode/
+/unity/.idea/
+/unity/Assets/Plugins/Editor/JetBrains*
+/unity/sysinfo.txt
+/unity/*.pidb.meta
+/unity/*.pdb.meta
+/unity/*.mdb.meta
+/unity/crashlytics-build.properties
+
+# Build output (WebGL player, reports)
+/build/
+
+# Tooling
+node_modules
+__pycache__/
+.DS_Store
