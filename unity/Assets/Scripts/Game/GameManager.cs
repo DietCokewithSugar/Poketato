@@ -53,6 +53,7 @@ namespace Poketato
             NewSim();
             if (WebBridge.Param("ui") == "0") ui.Root.gameObject.SetActive(false);
             if (WebBridge.Param("debugrefl") == "1") ui.StartCoroutine(ShowReflectionTexture());
+            if (WebBridge.Param("debugenv") == "1") LogEnvironment();
             if (WebBridge.Param("bench") == "1") StartBench();
             else if (WebBridge.Param("photo") != null) StartPhoto(ParseInt(WebBridge.Param("photo"), 1));
             else if (WebBridge.Param("start") != null) StartRun(WebBridge.Param("start"));
@@ -66,6 +67,16 @@ namespace Poketato
             var rt = UIKit.Box(ui.Root, "ReflectionDebug", new Vector2(0, 0), new Vector2(180, 120), new Vector2(320, 180));
             var img = rt.gameObject.AddComponent<UnityEngine.UI.RawImage>();
             img.texture = Shader.GetGlobalTexture("_PlanarReflectionTex");
+        }
+
+        static void LogEnvironment()
+        {
+            foreach (var em in FindObjectsByType<EnvMesh>(FindObjectsSortMode.None))
+            {
+                var mesh = em.GetComponent<MeshFilter>().sharedMesh;
+                var mr = em.GetComponent<MeshRenderer>();
+                UnityEngine.Debug.Log($"ENV {em.name} kind={em.kind}({(int)em.kind}) verts={(mesh ? mesh.vertexCount : -1)} bounds={(mesh ? mesh.bounds.ToString() : "-")} mat={(mr.sharedMaterial ? mr.sharedMaterial.name : "-")} layer={em.gameObject.layer}");
+            }
         }
 
         static int ParseInt(string s, int fallback) => int.TryParse(s, out var v) ? v : fallback;

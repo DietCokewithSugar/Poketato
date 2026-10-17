@@ -51,12 +51,14 @@ namespace Poketato.EditorTools
             PlayerSettings.stripEngineCode = true;
             PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.WebGL, ManagedStrippingLevel.Medium);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.WebGL, new[] { GraphicsDeviceType.OpenGLES3 });
-            PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
-            PlayerSettings.WebGL.decompressionFallback = false;
+            // Gzip + decompression fallback: the loader can decompress in JS, so any static host (Render Static
+            // Site included) works without custom Content-Encoding headers. PoketatoBuild can switch to Brotli.
+            PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Gzip;
+            PlayerSettings.WebGL.decompressionFallback = true;
             PlayerSettings.WebGL.template = "PROJECT:Poketato";
             PlayerSettings.WebGL.exceptionSupport = WebGLExceptionSupport.ExplicitlyThrownExceptionsOnly;
             PlayerSettings.WebGL.dataCaching = true;
-            PlayerSettings.WebGL.nameFilesAsHashes = false;
+            PlayerSettings.WebGL.nameFilesAsHashes = true;
             PlayerSettings.WebGL.powerPreference = WebGLPowerPreference.HighPerformance;
             PlayerSettings.SplashScreen.unityLogoStyle = PlayerSettings.SplashScreen.UnityLogoStyle.LightOnDark;
             PlayerSettings.SplashScreen.backgroundColor = new Color(0.06f, 0.08f, 0.11f);

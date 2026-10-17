@@ -8,7 +8,7 @@ const outDir = process.argv[3] || 'build/shots';
 const wait = Number(process.argv[4] || 20) * 1000;
 fs.mkdirSync(outDir, { recursive: true });
 
-const shots = [
+const shots = process.env.ONLY ? [{ name: 'debug-refl', q: process.env.ONLY }] : [
   { name: '01-puddle-reflection-dusk-high', q: 'photo=1&q=2&tod=1&ui=0&start=squirtle' },
   { name: '02-plaza-day-high', q: 'photo=2&q=2&tod=0&ui=0&start=pikachu' },
   { name: '03-lava-night-high', q: 'photo=3&q=2&tod=2&ui=0&start=charmander' },
