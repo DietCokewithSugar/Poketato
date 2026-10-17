@@ -1,0 +1,484 @@
+{
+  "url": "http://localhost:8090/",
+  "renderer": "llvmpipe",
+  "viewport": "1280x720",
+  "date": "2026-10-17T08:47:00.119Z",
+  "loads": {
+    "local": [
+      {
+        "marks": {
+          "htmlStart": 9.300000000745058,
+          "loaderReady": 32.60000000055879,
+          "downloaded": 238.30000000074506,
+          "instanceReady": 1132,
+          "firstFrame": 3300.300000000745
+        },
+        "bytes": {
+          "54f947bef092530519076e3d07431590.loader.js": {
+            "transfer": 48167,
+            "encoded": 47867,
+            "decoded": 47867,
+            "ms": 12
+          },
+          "b993ea0ba86a6e0de62d4aa29e46beab.framework.js.unityweb": {
+            "transfer": 87895,
+            "encoded": 87595,
+            "decoded": 87595,
+            "ms": 7
+          },
+          "6e9bf84939c1293bc1867d02349820f0.wasm.unityweb": {
+            "transfer": 10108141,
+            "encoded": 10107841,
+            "decoded": 10107841,
+            "ms": 42
+          },
+          "78be20757824f9c5013947a2b1807ef9.data.unityweb": {
+            "transfer": 5412183,
+            "encoded": 5411883,
+            "decoded": 5411883,
+            "ms": 18
+          }
+        },
+        "renderer": "ANGLE (Mesa, llvmpipe (LLVM 20.1.2 256 bits), OpenGL 4.5)"
+      },
+      {
+        "marks": {
+          "htmlStart": 14.200000000186265,
+          "loaderReady": 36.700000000186265,
+          "downloaded": 128.1000000005588,
+          "instanceReady": 1000,
+          "firstFrame": 3156.300000000745
+        },
+        "bytes": {
+          "54f947bef092530519076e3d07431590.loader.js": {
+            "transfer": 48167,
+            "encoded": 47867,
+            "decoded": 47867,
+            "ms": 12
+          },
+          "b993ea0ba86a6e0de62d4aa29e46beab.framework.js.unityweb": {
+            "transfer": 87895,
+            "encoded": 87595,
+            "decoded": 87595,
+            "ms": 2
+          },
+          "6e9bf84939c1293bc1867d02349820f0.wasm.unityweb": {
+            "transfer": 10108141,
+            "encoded": 10107841,
+            "decoded": 10107841,
+            "ms": 28
+          },
+          "78be20757824f9c5013947a2b1807ef9.data.unityweb": {
+            "transfer": 5412183,
+            "encoded": 5411883,
+            "decoded": 5411883,
+            "ms": 17
+          }
+        },
+        "renderer": "ANGLE (Mesa, llvmpipe (LLVM 20.1.2 256 bits), OpenGL 4.5)"
+      },
+      {
+        "marks": {
+          "htmlStart": 10.200000000186265,
+          "loaderReady": 35.700000000186265,
+          "downloaded": 124.3999999994412,
+          "instanceReady": 1016.7000000001863,
+          "firstFrame": 3184
+        },
+        "bytes": {
+          "54f947bef092530519076e3d07431590.loader.js": {
+            "transfer": 48167,
+            "encoded": 47867,
+            "decoded": 47867,
+            "ms": 10
+          },
+          "b993ea0ba86a6e0de62d4aa29e46beab.framework.js.unityweb": {
+            "transfer": 87895,
+            "encoded": 87595,
+            "decoded": 87595,
+            "ms": 3
+          },
+          "6e9bf84939c1293bc1867d02349820f0.wasm.unityweb": {
+            "transfer": 10108141,
+            "encoded": 10107841,
+            "decoded": 10107841,
+            "ms": 25
+          },
+          "78be20757824f9c5013947a2b1807ef9.data.unityweb": {
+            "transfer": 5412183,
+            "encoded": 5411883,
+            "decoded": 5411883,
+            "ms": 22
+          }
+        },
+        "renderer": "ANGLE (Mesa, llvmpipe (LLVM 20.1.2 256 bits), OpenGL 4.5)"
+      }
+    ],
+    "20Mbps-40ms": [
+      {
+        "marks": {
+          "htmlStart": 50.39999999944121,
+          "loaderReady": 117.3999999994412,
+          "downloaded": 6455.5,
+          "instanceReady": 7376.899999999441,
+          "firstFrame": 9532.099999999627
+        },
+        "bytes": {
+          "54f947bef092530519076e3d07431590.loader.js": {
+            "transfer": 48167,
+            "encoded": 47867,
+            "decoded": 47867,
+            "ms": 65
+          },
+          "b993ea0ba86a6e0de62d4aa29e46beab.framework.js.unityweb": {
+            "transfer": 87895,
+            "encoded": 87595,
+            "decoded": 87595,
+            "ms": 143
+          },
+          "6e9bf84939c1293bc1867d02349820f0.wasm.unityweb": {
+            "transfer": 10108141,
+            "encoded": 10107841,
+            "decoded": 10107841,
+            "ms": 6331
+          },
+          "78be20757824f9c5013947a2b1807ef9.data.unityweb": {
+            "transfer": 5412183,
+            "encoded": 5411883,
+            "decoded": 5411883,
+            "ms": 4414
+          }
+        },
+        "renderer": "ANGLE (Mesa, llvmpipe (LLVM 20.1.2 256 bits), OpenGL 4.5)"
+      }
+    ],
+    "5Mbps-80ms": [
+      {
+        "marks": {
+          "htmlStart": 92.20000000018626,
+          "loaderReady": 257.70000000018626,
+          "downloaded": 25328.700000000186,
+          "instanceReady": 26287.099999999627,
+          "firstFrame": 28466.599999999627
+        },
+        "bytes": {
+          "54f947bef092530519076e3d07431590.loader.js": {
+            "transfer": 48167,
+            "encoded": 47867,
+            "decoded": 47867,
+            "ms": 164
+          },
+          "b993ea0ba86a6e0de62d4aa29e46beab.framework.js.unityweb": {
+            "transfer": 87895,
+            "encoded": 87595,
+            "decoded": 87595,
+            "ms": 502
+          },
+          "6e9bf84939c1293bc1867d02349820f0.wasm.unityweb": {
+            "transfer": 10108141,
+            "encoded": 10107841,
+            "decoded": 10107841,
+            "ms": 25063
+          },
+          "78be20757824f9c5013947a2b1807ef9.data.unityweb": {
+            "transfer": 5412183,
+            "encoded": 5411883,
+            "decoded": 5411883,
+            "ms": 17541
+          }
+        },
+        "renderer": "ANGLE (Mesa, llvmpipe (LLVM 20.1.2 256 bits), OpenGL 4.5)"
+      }
+    ]
+  },
+  "bench": [
+    {
+      "scenario": "roster10",
+      "quality": "low",
+      "timeOfDay": "dusk",
+      "frames": 158,
+      "enemies": 9,
+      "actors": 10,
+      "projectiles": 3,
+      "lights": 2,
+      "transients": 3,
+      "width": 1280,
+      "height": 720,
+      "seconds": 8.03800106048584,
+      "avgFps": 19.656631469726562,
+      "avgMs": 50.873416900634766,
+      "p50Ms": 51,
+      "p95Ms": 57,
+      "p99Ms": 62,
+      "maxMs": 131,
+      "simMs": 0.12468038499355316,
+      "simMsMax": 0.7001000046730042,
+      "cpuMs": 3.7867064476013184,
+      "cpuP95Ms": 5.300000190734863,
+      "hitches33": 157,
+      "hitches50": 85,
+      "hitches100": 1,
+      "drawCalls": 83,
+      "batches": 83,
+      "setPassCalls": 51,
+      "triangles": 68709,
+      "heapMB": 115
+    },
+    {
+      "scenario": "combat60",
+      "quality": "low",
+      "timeOfDay": "dusk",
+      "frames": 163,
+      "enemies": 55,
+      "actors": 60,
+      "projectiles": 11,
+      "lights": 1,
+      "transients": 8,
+      "width": 1280,
+      "height": 720,
+      "seconds": 8.03600025177002,
+      "avgFps": 20.283723831176758,
+      "avgMs": 49.30061340332031,
+      "p50Ms": 49,
+      "p95Ms": 54,
+      "p99Ms": 58,
+      "maxMs": 61,
+      "simMs": 0.17975705862045288,
+      "simMsMax": 1.100000023841858,
+      "cpuMs": 2.9159467220306396,
+      "cpuP95Ms": 4,
+      "hitches33": 163,
+      "hitches50": 49,
+      "hitches100": 0,
+      "drawCalls": 179,
+      "batches": 176,
+      "setPassCalls": 60,
+      "triangles": 85911,
+      "heapMB": 115
+    },
+    {
+      "scenario": "horde150",
+      "quality": "low",
+      "timeOfDay": "dusk",
+      "frames": 145,
+      "enemies": 146,
+      "actors": 150,
+      "projectiles": 42,
+      "lights": 2,
+      "transients": 9,
+      "width": 1280,
+      "height": 720,
+      "seconds": 8.022003173828125,
+      "avgFps": 18.075292587280273,
+      "avgMs": 55.32413864135742,
+      "p50Ms": 56,
+      "p95Ms": 63,
+      "p99Ms": 70,
+      "maxMs": 71,
+      "simMs": 0.3103489577770233,
+      "simMsMax": 1.0999000072479248,
+      "cpuMs": 4.324138641357422,
+      "cpuP95Ms": 5.900100231170654,
+      "hitches33": 145,
+      "hitches50": 119,
+      "hitches100": 0,
+      "drawCalls": 318,
+      "batches": 306,
+      "setPassCalls": 71,
+      "triangles": 102027,
+      "heapMB": 115
+    },
+    {
+      "scenario": "roster10",
+      "quality": "medium",
+      "timeOfDay": "dusk",
+      "frames": 98,
+      "enemies": 9,
+      "actors": 10,
+      "projectiles": 1,
+      "lights": 2,
+      "transients": 2,
+      "width": 1280,
+      "height": 720,
+      "seconds": 8.144001007080078,
+      "avgFps": 12.033398628234863,
+      "avgMs": 83.10204315185547,
+      "p50Ms": 79,
+      "p95Ms": 92,
+      "p99Ms": 226,
+      "maxMs": 226,
+      "simMs": 0.0949091836810112,
+      "simMsMax": 0.3000999987125397,
+      "cpuMs": 5.425522327423096,
+      "cpuP95Ms": 3.900099992752075,
+      "hitches33": 97,
+      "hitches50": 97,
+      "hitches100": 2,
+      "drawCalls": 123,
+      "batches": 123,
+      "setPassCalls": 70,
+      "triangles": 125175,
+      "heapMB": 115
+    },
+    {
+      "scenario": "combat60",
+      "quality": "medium",
+      "timeOfDay": "dusk",
+      "frames": 93,
+      "enemies": 54,
+      "actors": 61,
+      "projectiles": 9,
+      "lights": 5,
+      "transients": 9,
+      "width": 1280,
+      "height": 720,
+      "seconds": 8.020002365112305,
+      "avgFps": 11.596010208129883,
+      "avgMs": 86.23655700683594,
+      "p50Ms": 85,
+      "p95Ms": 99,
+      "p99Ms": 102,
+      "maxMs": 102,
+      "simMs": 0.15375591814517975,
+      "simMsMax": 0.5,
+      "cpuMs": 3.9655957221984863,
+      "cpuP95Ms": 4.900000095367432,
+      "hitches33": 93,
+      "hitches50": 93,
+      "hitches100": 2,
+      "drawCalls": 281,
+      "batches": 277,
+      "setPassCalls": 88,
+      "triangles": 147587,
+      "heapMB": 115
+    },
+    {
+      "scenario": "horde150",
+      "quality": "medium",
+      "timeOfDay": "dusk",
+      "frames": 83,
+      "enemies": 139,
+      "actors": 151,
+      "projectiles": 19,
+      "lights": 2,
+      "transients": 13,
+      "width": 1280,
+      "height": 720,
+      "seconds": 8.084999084472656,
+      "avgFps": 10.265924453735352,
+      "avgMs": 97.40963745117188,
+      "p50Ms": 97,
+      "p95Ms": 109,
+      "p99Ms": 114,
+      "maxMs": 114,
+      "simMs": 0.2698710858821869,
+      "simMsMax": 1.5,
+      "cpuMs": 5.195188045501709,
+      "cpuP95Ms": 6.699999809265137,
+      "hitches33": 83,
+      "hitches50": 83,
+      "hitches100": 30,
+      "drawCalls": 521,
+      "batches": 512,
+      "setPassCalls": 99,
+      "triangles": 169427,
+      "heapMB": 115
+    },
+    {
+      "scenario": "roster10",
+      "quality": "high",
+      "timeOfDay": "dusk",
+      "frames": 41,
+      "enemies": 9,
+      "actors": 10,
+      "projectiles": 0,
+      "lights": 2,
+      "transients": 2,
+      "width": 1280,
+      "height": 720,
+      "seconds": 8.086000442504883,
+      "avgFps": 5.070492267608643,
+      "avgMs": 197.21951293945312,
+      "p50Ms": 196,
+      "p95Ms": 207,
+      "p99Ms": 501.9999694824219,
+      "maxMs": 501.9999694824219,
+      "simMs": 0.10731463134288788,
+      "simMsMax": 1.5,
+      "cpuMs": 16.97806167602539,
+      "cpuP95Ms": 7.400000095367432,
+      "hitches33": 40,
+      "hitches50": 40,
+      "hitches100": 40,
+      "drawCalls": 284,
+      "batches": 284,
+      "setPassCalls": 152,
+      "triangles": 389812,
+      "heapMB": 115
+    },
+    {
+      "scenario": "combat60",
+      "quality": "high",
+      "timeOfDay": "dusk",
+      "frames": 40,
+      "enemies": 57,
+      "actors": 61,
+      "projectiles": 7,
+      "lights": 2,
+      "transients": 3,
+      "width": 1280,
+      "height": 720,
+      "seconds": 8.100998878479004,
+      "avgFps": 4.937662124633789,
+      "avgMs": 202.52499389648438,
+      "p50Ms": 204,
+      "p95Ms": 211,
+      "p99Ms": 215,
+      "maxMs": 215,
+      "simMs": 0.1374949961900711,
+      "simMsMax": 0.7998999953269958,
+      "cpuMs": 5.507500171661377,
+      "cpuP95Ms": 6.900000095367432,
+      "hitches33": 40,
+      "hitches50": 40,
+      "hitches100": 40,
+      "drawCalls": 379,
+      "batches": 379,
+      "setPassCalls": 159,
+      "triangles": 402306,
+      "heapMB": 115
+    },
+    {
+      "scenario": "horde150",
+      "quality": "high",
+      "timeOfDay": "dusk",
+      "frames": 37,
+      "enemies": 146,
+      "actors": 150,
+      "projectiles": 19,
+      "lights": 2,
+      "transients": 4,
+      "width": 1280,
+      "height": 720,
+      "seconds": 8.118000984191895,
+      "avgFps": 4.557772636413574,
+      "avgMs": 219.40541076660156,
+      "p50Ms": 222,
+      "p95Ms": 233,
+      "p99Ms": 234,
+      "maxMs": 234,
+      "simMs": 0.3189162313938141,
+      "simMsMax": 1.600000023841858,
+      "cpuMs": 7.129732608795166,
+      "cpuP95Ms": 8.699999809265137,
+      "hitches33": 37,
+      "hitches50": 37,
+      "hitches100": 37,
+      "drawCalls": 557,
+      "batches": 555,
+      "setPassCalls": 195,
+      "triangles": 418988,
+      "heapMB": 115
+    }
+  ]
+}

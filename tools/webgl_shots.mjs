@@ -8,13 +8,10 @@ const outDir = process.argv[3] || 'build/shots';
 const wait = Number(process.argv[4] || 20) * 1000;
 fs.mkdirSync(outDir, { recursive: true });
 
-const shots = [
-  { name: '01-puddle-reflection-dusk-high', q: 'photo=1&q=2&tod=1&ui=0&start=squirtle' },
-  { name: '02-plaza-day-high', q: 'photo=2&q=2&tod=0&ui=0&start=pikachu' },
-  { name: '03-lava-night-high', q: 'photo=3&q=2&tod=2&ui=0&start=charmander' },
-  { name: '04-puddle-night-high', q: 'photo=1&q=2&tod=2&ui=0&start=bulbasaur' },
-  { name: '05-gameplay-hud-dusk-medium', q: 'photo=2&q=1&tod=1&perf=1' },
-  { name: '06-title', q: 'q=1&tod=1' },
+const shots = process.env.ONLY ? [{ name: 'only', q: process.env.ONLY }] : [
+  { name: '01-title', q: '' },
+  { name: '02-map', q: 'photo=2&ui=0&start=pikachu' },
+  { name: '03-battle', q: 'start=charmander&auto=1' },
 ];
 
 const browser = await chromium.launch({
