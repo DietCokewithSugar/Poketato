@@ -17,7 +17,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 UNITY = ROOT / "unity"
-ART_DIR = UNITY / "Assets" / "Art" / "Pokemon"
+ART_DIR = UNITY / "Assets" / "Resources" / "Pokemon"
 META_OUT = UNITY / "Assets" / "Resources" / "pokemon_sprites.json"
 CREDITS_OUT = ART_DIR / "CREDITS.md"
 

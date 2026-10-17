@@ -8,22 +8,20 @@ using UnityEngine.InputSystem;
 namespace Poketato
 {
     /// <summary>
-    /// Owns the run: title -> waves -> level-up cards -> shop -> ... -> result, plus the WebGL benchmark.
-    /// URL parameters (WebGL): ?bench=1&secs=8&tiers=0,1,2  ?q=0..2  ?tod=0..2  ?auto=1 (autopilot)  ?start=pikachu
+    /// Run flow for the Emerald-styled 2D build: title, waves, level-up cards, shop, result.
+    /// URL parameters: ?bench=1&secs=8  ?auto=1  ?start=pikachu  ?photo=1..3  ?ui=0  ?perf=1
     /// </summary>
     public class GameManager : MonoBehaviour
     {
         enum State { Title, Wave, LevelUp, Shop, Result, Bench }
 
-        public GameView view;
-        public UIManager ui;
+        public ArenaMap map;
+        public ArenaView view;
+        public GameScreens ui;
         public PerfStats perf;
-        public QualityController quality;
-        public EnvironmentController environment;
-        public DamageNumbers numbers;
+        public PixelScreen screen;
 
-        public QualityController Quality => quality;
-        public EnvironmentController Environment => environment;
+        public GameSim Sim => sim;
         public string BenchLabel { get; private set; } = "";
 
         GameSim sim;
@@ -38,45 +36,26 @@ namespace Poketato
         void Start()
         {
             Application.targetFrameRate = -1;
-            ui.gm = this;
-            ui.Build();
-            numbers.cam = Camera.main;
-            numbers.Init(ui.NumbersLayer, UIKit.Font);
-            view.numbers = numbers;
+            PixelArt.Build();
+            map.Build();
             view.Init();
+            view.sim = null;
             view.onMessage = ui.Message;
-            quality.Apply(ParseInt(WebBridge.Param("q"), QualitySettings.GetQualityLevel()));
-            environment.Apply(ParseInt(WebBridge.Param("tod"), 1));
+            view.onLevelUp = _ => { };
+            ui.gm = this;
+            ui.Build(Camera.main);
+            screen.view = ui.View;
+            screen.scaler = ui.View.canvas.GetComponent<UnityEngine.UI.CanvasScaler>();
+            screen.worldCamera = Camera.main;
             autopilot = WebBridge.Param("auto") == "1";
             ui.PerfVisible = WebBridge.Param("perf") == "1";
+            if (WebBridge.Param("ui") == "0") ui.SetChrome(false);
 
             NewSim();
-            if (WebBridge.Param("ui") == "0") ui.Root.gameObject.SetActive(false);
-            if (WebBridge.Param("debugrefl") == "1") ui.StartCoroutine(ShowReflectionTexture());
-            if (WebBridge.Param("debugenv") == "1") LogEnvironment();
             if (WebBridge.Param("bench") == "1") StartBench();
             else if (WebBridge.Param("photo") != null) StartPhoto(ParseInt(WebBridge.Param("photo"), 1));
             else if (WebBridge.Param("start") != null) StartRun(WebBridge.Param("start"));
             else ToTitle();
-        }
-
-        IEnumerator ShowReflectionTexture()
-        {
-            yield return null;
-            yield return null;
-            var rt = UIKit.Box(ui.Root, "ReflectionDebug", new Vector2(0, 0), new Vector2(180, 120), new Vector2(320, 180));
-            var img = rt.gameObject.AddComponent<UnityEngine.UI.RawImage>();
-            img.texture = Shader.GetGlobalTexture("_PlanarReflectionTex");
-        }
-
-        static void LogEnvironment()
-        {
-            foreach (var em in FindObjectsByType<EnvMesh>(FindObjectsSortMode.None))
-            {
-                var mesh = em.GetComponent<MeshFilter>().sharedMesh;
-                var mr = em.GetComponent<MeshRenderer>();
-                UnityEngine.Debug.Log($"ENV {em.name} kind={em.kind}({(int)em.kind}) verts={(mesh ? mesh.vertexCount : -1)} bounds={(mesh ? mesh.bounds.ToString() : "-")} mat={(mr.sharedMaterial ? mr.sharedMaterial.name : "-")} layer={em.gameObject.layer}");
-            }
         }
 
         static int ParseInt(string s, int fallback) => int.TryParse(s, out var v) ? v : fallback;
@@ -89,16 +68,13 @@ namespace Poketato
             view.sim = sim;
         }
 
-        // ------------------------------------------------------------------ flow (called by UI)
-
         public void ToTitle()
         {
             StopAllCoroutines();
             paused = false;
             Time.timeScale = 1f;
             NewSim();
-            numbers.ClearAll();
-            // Idle showcase behind the title: the four partners wander around the plaza.
+            view.ClearNumbers();
             sim.StartRun("charmander");
             view.SpawnPlayer();
             sim.benchMode = true;
@@ -117,7 +93,7 @@ namespace Poketato
             paused = false;
             Time.timeScale = 1f;
             NewSim();
-            numbers.ClearAll();
+            view.ClearNumbers();
             if (!GameData.Lines.ContainsKey(lineId)) lineId = "charmander";
             sim.StartRun(lineId);
             view.SpawnPlayer();
@@ -147,7 +123,7 @@ namespace Poketato
             sim.RollShop();
             shopNote = null;
             state = State.Shop;
-            ui.ShowShop(sim);
+            ui.ShowShop(sim, shopNote);
         }
 
         public void Buy(int i)
@@ -167,34 +143,20 @@ namespace Poketato
         public void NextWave()
         {
             if (state != State.Shop) return;
-            numbers.ClearAll();
+            view.ClearNumbers();
             ui.ShowHud();
             sim.StartWave(sim.wave + 1);
             state = State.Wave;
         }
 
-        public void SetQuality(int q)
-        {
-            quality.Apply(q);
-            ui.RefreshOptions();
-            ui.Message("画质：" + QualityController.Names[q]);
-        }
-
-        public void SetTimeOfDay(int t)
-        {
-            environment.Apply(t);
-            ui.RefreshOptions();
-        }
-
         public void TogglePause()
         {
+            if (state != State.Wave && !paused) return;
             if (state != State.Wave) return;
             paused = !paused;
             Time.timeScale = paused ? 0f : 1f;
             ui.SetPause(paused);
         }
-
-        // ------------------------------------------------------------------ frame
 
         Vector2 ReadMove()
         {
@@ -216,7 +178,6 @@ namespace Poketato
             return v;
         }
 
-        /// <summary>Simple potential-field pilot (dodge nearby enemies, grab candy, orbit the arena centre).</summary>
         Vector2 Autopilot()
         {
             var p = sim.player;
@@ -262,7 +223,7 @@ namespace Poketato
             float dt = Mathf.Min(Time.deltaTime, 1f / 20f);
             if (!paused && sim != null)
             {
-                Vector2 input = photo ? Vector2.zero : state == State.Bench ? BenchPilot() : state == State.Title ? Vector2.zero : ReadMove();
+                Vector2 input = photo ? Vector2.zero : state == State.Bench ? BenchPilot() : state == State.Wave ? ReadMove() : Vector2.zero;
                 if (autopilot && state == State.Wave && input.sqrMagnitude < 0.01f) input = Autopilot();
                 watch.Restart();
                 sim.Step(dt, input);
@@ -274,7 +235,7 @@ namespace Poketato
             if (sim != null)
             {
                 view.Sync(dt);
-                SpriteActor.TickAll(dt);
+                PixelActor.TickAll(dt);
                 ui.UpdateHud(sim);
             }
             perfTextT -= Time.unscaledDeltaTime;
@@ -290,18 +251,14 @@ namespace Poketato
             var k = Keyboard.current;
             if (k == null) return;
             if (k.f3Key.wasPressedThisFrame || k.backquoteKey.wasPressedThisFrame) ui.PerfVisible = !ui.PerfVisible;
-            if (k.digit1Key.wasPressedThisFrame) SetQuality(0);
-            if (k.digit2Key.wasPressedThisFrame) SetQuality(1);
-            if (k.digit3Key.wasPressedThisFrame) SetQuality(2);
-            if (k.nKey.wasPressedThisFrame) SetTimeOfDay((environment.Preset + 1) % 3);
-            if (k.escapeKey.wasPressedThisFrame) TogglePause();
+            if (k.escapeKey.wasPressedThisFrame && state == State.Wave) TogglePause();
             if (k.tKey.wasPressedThisFrame && state == State.Wave)
             {
                 autopilot = !autopilot;
                 ui.Message(autopilot ? "AI 辅助战斗：开" : "AI 辅助战斗：关");
             }
             var g = Gamepad.current;
-            if (g != null && g.startButton.wasPressedThisFrame) TogglePause();
+            if (g != null && g.startButton.wasPressedThisFrame && state == State.Wave) TogglePause();
         }
 
         void CheckPhase()
@@ -315,11 +272,7 @@ namespace Poketato
                     break;
                 case SimPhase.Won:
                 case SimPhase.Inter:
-                    if (sim.NextCards())
-                    {
-                        state = State.LevelUp;
-                        ui.ShowLevelUp(sim);
-                    }
+                    if (sim.NextCards()) { state = State.LevelUp; ui.ShowLevelUp(sim); }
                     else EnterShop();
                     break;
             }
@@ -328,22 +281,17 @@ namespace Poketato
         string PerfText()
         {
             var sb = new StringBuilder();
-            sb.Append($"FPS {perf.SmoothedFps:0.0}  ({1000f / Mathf.Max(1, perf.SmoothedFps):0.0} ms)\n");
-            sb.Append($"主线程 CPU {perf.LastCpuMs:0.0} ms · 模拟 {perf.LastSimMs:0.00} ms\n");
-            sb.Append($"Draw {Fmt(perf.DrawCalls)} · Batch {Fmt(perf.Batches)} · SetPass {Fmt(perf.SetPass)}\n");
-            sb.Append($"三角形 {Fmt(perf.Triangles)}\n");
-            sb.Append($"敌人 {sim.enemies.Count} · 精灵 {SpriteActor.Active.Count} · 弹体 {sim.projs.Count}\n");
-            sb.Append($"动态光源 {view.lights.ActiveCount}/{view.lights.Capacity} · 特效 {view.TransientCount}\n");
-            sb.Append($"画质 {QualityController.Names[Mathf.Max(0, quality.Level)]} · {EnvironmentController.Names[Mathf.Max(0, environment.Preset)]}\n");
-            sb.Append($"{Screen.width}x{Screen.height} · 堆 {PerfStats.HeapMB} MB");
+            sb.Append($"FPS {perf.SmoothedFps:0.0}\n");
+            sb.Append($"CPU {perf.LastCpuMs:0.0} ms\n");
+            sb.Append($"模拟 {perf.LastSimMs:0.00} ms\n");
+            sb.Append($"Draw {Fmt(perf.DrawCalls)}\n");
+            sb.Append($"敌人 {sim.enemies.Count}  精灵 {PixelActor.Active.Count}\n");
+            sb.Append($"480x320 x{Mathf.Max(1, Mathf.Min(Screen.width / 480, Screen.height / 320))}");
             return sb.ToString();
         }
 
         static string Fmt(long v) => v < 0 ? "n/a" : v.ToString();
 
-        // ------------------------------------------------------------------ photo mode
-
-        /// <summary>All ten species around the player at a chosen spot, skills firing, nothing dies (for screenshots).</summary>
         public void StartPhoto(int variant)
         {
             StopAllCoroutines();
@@ -351,17 +299,17 @@ namespace Poketato
             photo = true;
             string line = WebBridge.Param("start") ?? "charmander";
             if (!GameData.Lines.ContainsKey(line)) line = "charmander";
-            SetupShowcase(line, 9);
-            Vector2[] spots = { new(384, 288), new(292, 334), new(384, 288), new(548, 236) };
+            SetupShowcase(line);
+            Vector2[] spots = { new(196, 336), new(384, 288), new(590, 196) };
             sim.player.pos = spots[Mathf.Clamp(variant, 0, spots.Length - 1)];
             view.SpawnPlayer();
             SpawnRoster();
             state = State.Bench;
-            BenchLabel = "拍照模式";
+            BenchLabel = "";
             ui.ShowHud();
         }
 
-        void SetupShowcase(string line, int target)
+        void SetupShowcase(string line)
         {
             sim.StartRun(line);
             sim.player.skills.Clear();
@@ -378,7 +326,7 @@ namespace Poketato
             sim.benchMode = true;
             sim.godMode = true;
             sim.showcaseOnly = true;
-            sim.benchTarget = target;
+            sim.benchTarget = 0;
             sim.StartWave(4);
         }
 
@@ -389,11 +337,9 @@ namespace Poketato
             for (int i = 0; i < others.Count; i++)
             {
                 float a = Mathf.PI * 2 * i / others.Count;
-                sim.SpawnEnemy(others[i], sim.player.pos + new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.7f) * (60 + (i % 3) * 18), true);
+                sim.SpawnEnemy(others[i], sim.player.pos + new Vector2(Mathf.Cos(a), Mathf.Sin(a) * 0.7f) * (50 + (i % 3) * 16), true);
             }
         }
-
-        // ------------------------------------------------------------------ benchmark
 
         public void StartBench()
         {
@@ -406,57 +352,42 @@ namespace Poketato
             paused = false;
             Time.timeScale = 1f;
             float secs = Mathf.Max(2f, ParseInt(WebBridge.Param("secs"), 8));
-            var tiers = new List<int>();
-            foreach (var s in (WebBridge.Param("tiers") ?? "0,1,2").Split(','))
-                if (int.TryParse(s, out var t)) tiers.Add(Mathf.Clamp(t, 0, 2));
             var scenarios = new List<(string id, string label, int count)>
             {
-                ("roster10", "10 种宝可梦同屏（全部特效）", 9),
-                ("combat60", "战斗：60 只敌人", 60),
-                ("horde150", "战斗：150 只敌人（原版单人上限 100）", 150),
+                ("roster10", "10 种同屏", 9),
+                ("combat60", "60 只敌人", 60),
+                ("horde150", "150 只敌人", 150),
             };
-            var results = new List<PerfSummary>();
-            var log = new StringBuilder("<color=#ffd040>WebGL 性能测试</color>  每项预热 2 秒，采样 " + secs + " 秒\n");
-            int tod = environment.Preset;
-            ui.ShowBench(log.ToString(), true);
-            WebBridge.Mark("benchStart");
-            foreach (int tier in tiers)
+            var log = new StringBuilder("像素风性能测试\n");
+            ui.ShowBench(log.ToString(), false);
+            foreach (var sc in scenarios)
             {
-                quality.Apply(tier);
-                ui.RefreshOptions();
-                foreach (var sc in scenarios)
-                {
-                    NewSim();
-                    numbers.ClearAll();
-                    // A mid-run build so skill VFX density matches wave 10+ of the web game.
-                    SetupShowcase("charmander", sc.count);
-                    sim.showcaseOnly = sc.id == "roster10";
-                    view.SpawnPlayer();
-                    if (sim.showcaseOnly) SpawnRoster();
-                    state = State.Bench;
-                    BenchLabel = $"{QualityController.Names[tier]} · {sc.label}";
-                    ui.ShowBench(log + $"\n▶ 正在测试：{BenchLabel}", true);
-                    yield return new WaitForSecondsRealtime(2f);
-                    perf.ResetWindow();
-                    yield return new WaitForSecondsRealtime(secs);
-                    var r = perf.Summarize(sc.id);
-                    r.quality = QualityController.Ids[tier];
-                    r.timeOfDay = EnvironmentController.Ids[Mathf.Max(0, tod)];
-                    r.enemies = sim.enemies.Count;
-                    r.actors = SpriteActor.Active.Count;
-                    r.projectiles = sim.projs.Count;
-                    r.lights = view.lights.ActiveCount;
-                    r.transients = view.TransientCount;
-                    results.Add(r);
-                    WebBridge.Report(JsonUtility.ToJson(r));
-                    log.Append($"\n{QualityController.Names[tier]} · {sc.label}\n  {r.avgFps:0.0} FPS · 平均 {r.avgMs:0.0} ms · p95 {r.p95Ms:0.0} · p99 {r.p99Ms:0.0} · 最大 {r.maxMs:0}\n  卡顿(>50ms) {r.hitches50} 帧 · CPU {r.cpuMs:0.0} ms · 模拟 {r.simMs:0.00} ms · 精灵 {r.actors} · Draw {Fmt(r.drawCalls)}");
-                    ui.ShowBench(log.ToString(), true);
-                }
+                NewSim();
+                view.ClearNumbers();
+                SetupShowcase("charmander");
+                sim.showcaseOnly = sc.id == "roster10";
+                sim.benchTarget = sc.count;
+                view.SpawnPlayer();
+                if (sim.showcaseOnly) SpawnRoster();
+                state = State.Bench;
+                BenchLabel = sc.label;
+                ui.ShowBench(log + "\n> " + sc.label, true);
+                yield return new WaitForSecondsRealtime(2f);
+                perf.ResetWindow();
+                yield return new WaitForSecondsRealtime(secs);
+                var r = perf.Summarize(sc.id);
+                r.quality = "gba";
+                r.timeOfDay = "day";
+                r.enemies = sim.enemies.Count;
+                r.actors = PixelActor.Active.Count;
+                r.projectiles = sim.projs.Count;
+                r.transients = view.FxCount;
+                WebBridge.Report(JsonUtility.ToJson(r));
+                log.Append($"\n{sc.label}  {r.avgFps:0.0} FPS  CPU {r.cpuMs:0.0} ms");
+                ui.ShowBench(log.ToString(), false);
             }
             WebBridge.Mark("benchDone");
             UnityEngine.Debug.Log("POKETATO_BENCH_DONE");
-            log.Append("\n\n<color=#ffd040>完成</color>（结果也输出到浏览器控制台 POKETATO_BENCH）");
-            ui.ShowBench(log.ToString(), false);
         }
     }
 }

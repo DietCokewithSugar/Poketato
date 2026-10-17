@@ -1,7 +1,8 @@
-# Poketato · 宝可肉鸽 Unity 版（2.5D 可行性 MVP）
+# Poketato · 宝可肉鸽 Unity 版（GBA 绿宝石像素风）
 
-把 Steven 的网页版宝可梦割草肉鸽 [poke-rouge](https://github.com/DietCokewithSugar/poke-rouge)（TypeScript，玩法参考《土豆兄弟》）迁移到 **Unity 6 + URP** 的可行性原型。
-目标是 HD-2D 风格：像素精灵站在 3D 场景里，受实时光照、投射/接收实时阴影，有水面反射和后处理。
+把 Steven 的网页版宝可梦割草肉鸽 [poke-rouge](https://github.com/DietCokewithSugar/poke-rouge)（TypeScript，玩法参考《土豆兄弟》）迁移到 **Unity 6** 的原型。
+玩法不变：竞技场里实时移动、技能自动释放、一波波敌人、升级选卡、商店、结算。
+画面是纯平面 2D，正交俯视，按《宝可梦 绿宝石》的像素风格画：480×320（正好是 GBA 240×160 的 2 倍）整数倍放大、point 过滤、瓦片地图、窗口式 UI。没有透视相机、3D 光照、阴影、景深或泛光。
 
 - 10 种宝可梦：4 条可选伙伴（小火龙、杰尼龟、妙蛙种子、皮卡丘）+ 6 种第 1~5 波的野生宝可梦（绿毛虫、小拉达、波波、超音蝠、走路草、精英大针蜂）
 - 一个完整的小循环：选伙伴 → 3 波生存战（技能自动释放、捡糖果升级）→ 升级选卡 → 商店 → 下一波 → 结算
@@ -11,11 +12,9 @@
 可行性结论、WebGL 性能数据、扩展到全图鉴的分析和工作量评估见 **[docs/MVP_REPORT.md](docs/MVP_REPORT.md)**；
 Render 与 Supabase 的后续计划见 **[docs/DEPLOY_PLAN.md](docs/DEPLOY_PLAN.md)**；素材许可风险见 **[docs/LICENSES.md](docs/LICENSES.md)**。
 
-![黄昏的水洼：实时倒影、雨、灯笼辉光与长阴影](docs/screenshots/01-puddle-reflection-dusk-high.jpg)
-
-| ![白天广场](docs/screenshots/02-plaza-day-high.jpg) | ![夜晚熔岩](docs/screenshots/03-lava-night-high.jpg) |
+| ![标题](docs/screenshots/01-title.jpg) | ![地图](docs/screenshots/02-map.jpg) |
 |---|---|
-| ![实战 HUD 与性能面板](docs/screenshots/05-gameplay-hud-dusk-medium.jpg) | ![标题与选伙伴](docs/screenshots/06-title.jpg) |
+| ![即时战斗](docs/screenshots/03-battle.jpg) | |
 
 ## 部署到 Render（静态站点）
 
@@ -56,25 +55,22 @@ python3 -m http.server 8090 --directory webgl      # 普通静态服务器即可
 
 ### 操作与 URL 参数
 
-- WASD / 方向键 / 手柄左摇杆移动，技能自动释放；`Esc` 暂停；`T` 切换 AI 辅助战斗
-- `F3` 性能面板（FPS、主线程 CPU 毫秒、Draw Call、三角形、光源数、wasm 堆）；`1/2/3` 切换低/中/高画质；`N` 切换白天/黄昏/夜晚
+- 标题里用方向键选择，`Z` / 回车确定。战斗中 WASD / 方向键 / 手柄左摇杆移动，技能自动释放
+- `Esc` 暂停；`T` 切换 AI 辅助战斗；`F3` 性能面板（FPS、主线程 CPU、Draw Call）
 
 | 参数 | 作用 |
 |---|---|
-| `?bench=1&secs=8&tiers=0,1,2` | 自动性能测试：10 种同屏 / 60 只敌人 / 150 只敌人 × 各画质，结果显示在屏幕上并输出到控制台 |
-| `?q=0..2` | 画质 低/中/高 |
-| `?tod=0..2` | 白天/黄昏/夜晚 |
 | `?start=pikachu` | 跳过标题直接开局（charmander / squirtle / bulbasaur / pikachu） |
 | `?auto=1` | AI 辅助战斗（自动走位） |
-| `?photo=1..3&ui=0` | 拍照模式：10 种宝可梦围在水洼/广场/熔岩边，持续释放技能；`ui=0` 隐藏界面 |
+| `?photo=0..2&ui=0` | 拍照：10 种宝可梦围在水洼 / 广场 / 熔岩边；`ui=0` 隐藏界面 |
+| `?bench=1&secs=8` | 自动性能测试，结果显示在屏幕上并输出到控制台 |
 | `?perf=1` | 打开性能面板 |
-| `?dpr=2` | 按设备像素比渲染（默认 1，避免高分屏上填充率翻倍） |
 
 ## 打开 / 重建 Unity 项目
 
 - Unity **6000.3.26f1**（Unity 6.3 LTS），模块：WebGL Build Support。项目在 `unity/`。
-- 第一次打开前不需要任何手工操作：所有生成内容（URP 三档画质资产、材质、程序化贴图、场景）都已提交；
-  环境网格（地面、树、岩石、水洼、熔岩……）在场景加载时由 `EnvMesh` 按固定种子生成，编辑器里也能看到。
+- 地图瓦片在运行时由 `ArenaMap` 生成，像素 UI 和图块由 `PixelArt` 绘制，仓库里不存大块贴图。
+  管线用 URP 的 2D Renderer，但精灵和瓦片都不走 3D 光照。
 - 菜单 **Poketato → Setup Everything** 会从代码重新生成上述全部内容；**Poketato → Build WebGL** 输出到 `webgl/`。
 
 命令行（无界面）重建：
@@ -105,15 +101,14 @@ $U -batchmode -nographics -projectPath unity -buildTarget WebGL \
 ## 仓库结构
 
 ```
-unity/                    Unity 6.3 URP 项目
+unity/                    Unity 6.3 项目（URP 2D Renderer，正交相机）
   Assets/Scripts/Data     从 poke-rouge 移植的数据：属性克制、技能、进化线、敌人、波次、道具、场地
   Assets/Scripts/Sim      单机版游戏模拟（纯 C#，不依赖场景对象，可移到服务器上跑）
-  Assets/Scripts/Render   公告板精灵、相机、平面反射、光源池、环境网格生成、画质与昼夜
-  Assets/Scripts/UI       运行时生成的 uGUI（PMD 风格面板 + 像素中文字体）
+  Assets/Scripts/Pixel    像素图集、瓦片地图、精灵、480×320 整数缩放相机、特效
+  Assets/Scripts/UI       绿宝石风格窗口、菜单、HUD（运行时生成）
   Assets/Scripts/Perf     帧时间统计、网页桥接（URL 参数、测试结果上报）
-  Assets/Shaders          BillboardSprite（光照+阴影+GPU Instancing）、Water（平面反射）、Lava、FxAdditive
-  Assets/Editor           PoketatoSetup（一键生成项目内容）、PoketatoBuild（WebGL 构建）、诊断
-  Assets/Art/Pokemon      10 张精灵图集（来自 poke-rouge / SpriteCollab，CC BY-NC 4.0，署名见 CREDITS.md）
+  Assets/Editor           PoketatoSetup（一键生成场景）、PoketatoBuild（WebGL 构建）
+  Assets/Resources/Pokemon  10 张精灵图集（SpriteCollab，CC BY-NC 4.0，署名见 CREDITS.md）
 webgl/                    预构建的 WebGL 播放器（Render 发布目录）
 render.yaml               Render Blueprint
 tools/                    素材导入、字体子集化、本地服务器、Playwright 冒烟/截图/性能脚本
@@ -135,7 +130,7 @@ Node 脚本依赖 `playwright-core`（`npm i playwright-core`）和本机 Chrome
 ## 版权
 
 - 代码：从 poke-rouge（MIT）移植/重写；本仓库还没有 LICENSE 文件，建议沿用 MIT。
-- 宝可梦精灵：[PMDCollab/SpriteCollab](https://github.com/PMDCollab/SpriteCollab)，**CC BY-NC 4.0（仅限非商业）**，画师见 `unity/Assets/Art/Pokemon/CREDITS.md`。
+- 宝可梦精灵：[PMDCollab/SpriteCollab](https://github.com/PMDCollab/SpriteCollab)，**CC BY-NC 4.0（仅限非商业）**，画师见 `unity/Assets/Resources/Pokemon/CREDITS.md`。
 - 字体：[Fusion Pixel Font](https://github.com/TakWolf/fusion-pixel-font)，SIL OFL 1.1（`unity/Assets/Resources/Fonts/OFL.txt`）。
-- 场景、贴图、特效全部由代码程序化生成，没有使用第三方 3D 素材。
+- 地图、窗口和特效是本仓库画的像素图，不是《绿宝石》的原版素材。详见 [docs/LICENSES.md](docs/LICENSES.md)。
 - Pokémon 及相关名称、角色是 Nintendo / Creatures Inc. / GAME FREAK / The Pokémon Company 的商标与财产；本项目为非营利粉丝作品。详见 [docs/LICENSES.md](docs/LICENSES.md)。

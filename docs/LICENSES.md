@@ -7,10 +7,10 @@
 
 | 内容 | 来源 | 许可 | 注意 |
 |---|---|---|---|
-| 10 只宝可梦的精灵图集（`unity/Assets/Art/Pokemon`） | poke-rouge `public/sprites/` ← [PMDCollab/SpriteCollab](https://github.com/PMDCollab/SpriteCollab) | **CC BY-NC 4.0** | 需署名（`CREDITS.md` 已列出画师）；部分基础帧标注为 CHUNSOFT，即源自官方《不可思议的迷宫》 |
+| 10 只宝可梦的精灵图集（`unity/Assets/Resources/Pokemon`） | poke-rouge `public/sprites/` ← [PMDCollab/SpriteCollab](https://github.com/PMDCollab/SpriteCollab) | **CC BY-NC 4.0** | 需署名（同目录 `CREDITS.md`）；部分基础帧标注为 CHUNSOFT，即源自官方《不可思议的迷宫》。这些是 PMD 行走图，不是 GBA 正面/背面图 |
 | 像素中文字体（子集） | [Fusion Pixel Font](https://github.com/TakWolf/fusion-pixel-font) | SIL OFL 1.1 | 许可文件随附在 `Resources/Fonts/OFL.txt` |
 | 玩法数值 | poke-rouge 源码 | MIT（Steven 的项目） | 移植时保留了数值，代码为 C# 重写 |
-| 场景、贴图、特效、UI 边框 | 本仓库代码程序化生成 | — | 没有使用第三方 3D 素材 |
+| 地图瓦片、树、UI 窗口、技能特效、数字 | `PixelArt.cs` 在运行时绘制 | 本仓库原创 | 配色和布局参考《宝可梦 绿宝石》的观感，**没有**使用任天堂的原版图块、字体或界面素材，也没有从 PokéRogue / pokesurvivor 复制图片 |
 
 ## 两个参考素材仓库
 
