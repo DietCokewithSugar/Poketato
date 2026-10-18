@@ -8,12 +8,14 @@ using UnityEngine.Rendering.Universal;
 namespace Poketato.EditorTools
 {
     /// <summary>
-    /// Rebuilds the 2D project from code:
+    /// Rebuilds the 2.5D URP stage:
     ///   Unity -batchmode -projectPath unity -executeMethod Poketato.EditorTools.PoketatoSetup.All -quit
     /// </summary>
     public static class PoketatoSetup
     {
         const string SettingsDir = "Assets/Settings";
+        const string PipelinePath = SettingsDir + "/URP_25D.asset";
+        const string RendererPath = SettingsDir + "/ForwardRenderer.asset";
         const string ScenePath = "Assets/Scenes/Main.unity";
 
         [MenuItem("Poketato/Setup Everything")]
@@ -21,11 +23,22 @@ namespace Poketato.EditorTools
         {
             ConfigurePlayer();
             ConfigureQuality();
-            ImportSprites();
             ImportFont();
             BuildScene();
             AssetDatabase.SaveAssets();
             Debug.Log("[Poketato] setup complete");
+        }
+
+        [InitializeOnLoadMethod]
+        static void Bootstrap()
+        {
+            EditorApplication.delayCall += delegate
+            {
+                if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+                var current = GraphicsSettings.defaultRenderPipeline as UniversalRenderPipelineAsset;
+                if (current != null && current.name == "URP_25D") return;
+                ConfigureQuality();
+            };
         }
 
         [MenuItem("Poketato/Steps/Player Settings")]
@@ -33,34 +46,29 @@ namespace Poketato.EditorTools
         {
             PlayerSettings.companyName = "Poketato";
             PlayerSettings.productName = "Poketato";
-            PlayerSettings.bundleVersion = "0.2.0";
+            PlayerSettings.bundleVersion = "0.3.0";
             PlayerSettings.colorSpace = ColorSpace.Linear;
             PlayerSettings.runInBackground = true;
-            PlayerSettings.stripEngineCode = true;
-            PlayerSettings.SetManagedStrippingLevel(UnityEditor.Build.NamedBuildTarget.WebGL, ManagedStrippingLevel.Medium);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.WebGL, new[] { GraphicsDeviceType.OpenGLES3 });
-            // Gzip + JS decompression fallback: a plain static host (Render) needs no Content-Encoding headers.
             PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Gzip;
             PlayerSettings.WebGL.decompressionFallback = true;
             PlayerSettings.WebGL.template = "PROJECT:Poketato";
             PlayerSettings.WebGL.exceptionSupport = WebGLExceptionSupport.ExplicitlyThrownExceptionsOnly;
             PlayerSettings.WebGL.dataCaching = true;
             PlayerSettings.WebGL.nameFilesAsHashes = true;
-            PlayerSettings.WebGL.powerPreference = WebGLPowerPreference.HighPerformance;
-            PlayerSettings.SplashScreen.unityLogoStyle = PlayerSettings.SplashScreen.UnityLogoStyle.LightOnDark;
-            PlayerSettings.SplashScreen.backgroundColor = new Color(0.06f, 0.1f, 0.06f);
-            PlayerSettings.defaultScreenWidth = 960;
-            PlayerSettings.defaultScreenHeight = 640;
-            PlayerSettings.defaultWebScreenWidth = 960;
-            PlayerSettings.defaultWebScreenHeight = 640;
+            PlayerSettings.defaultScreenWidth = 1280;
+            PlayerSettings.defaultScreenHeight = 720;
+            PlayerSettings.defaultWebScreenWidth = 1280;
+            PlayerSettings.defaultWebScreenHeight = 720;
         }
 
         [MenuItem("Poketato/Steps/Quality")]
         public static void ConfigureQuality()
         {
-            var pipeline = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(SettingsDir + "/URP_2D.asset");
-            if (!pipeline) { Debug.LogError("[Poketato] URP_2D.asset missing"); return; }
+            var pipeline = EnsurePipeline();
+            if (pipeline == null) return;
             GraphicsSettings.defaultRenderPipeline = pipeline;
+            QualitySettings.renderPipeline = pipeline;
             var qs = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/QualitySettings.asset")[0]);
             var levels = qs.FindProperty("m_QualitySettings");
             for (int i = 0; i < levels.arraySize; i++)
@@ -68,34 +76,61 @@ namespace Poketato.EditorTools
             qs.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        [MenuItem("Poketato/Steps/Import Sprites")]
-        public static void ImportSprites()
+        public static UniversalRenderPipelineAsset EnsurePipeline()
         {
-            foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Resources/Pokemon" }))
+            var renderer = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(RendererPath);
+            if (renderer == null)
             {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                if (path.EndsWith(".md")) continue;
-                var ti = AssetImporter.GetAtPath(path) as TextureImporter;
-                if (!ti) continue;
-                ti.textureType = TextureImporterType.Default;
-                ti.sRGBTexture = true;
-                ti.alphaIsTransparency = true;
-                ti.mipmapEnabled = false;
-                ti.filterMode = FilterMode.Point;
-                ti.wrapMode = TextureWrapMode.Clamp;
-                ti.npotScale = TextureImporterNPOTScale.None;
-                ti.maxTextureSize = 4096;
-                ti.textureCompression = TextureImporterCompression.Uncompressed;
-                ti.isReadable = true;
-                ti.SaveAndReimport();
+                renderer = ScriptableObject.CreateInstance<UniversalRendererData>();
+                renderer.name = "ForwardRenderer";
+                AssetDatabase.CreateAsset(renderer, RendererPath);
             }
+            var pipeline = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(PipelinePath);
+            if (pipeline == null)
+            {
+                pipeline = UniversalRenderPipelineAsset.Create(renderer);
+                pipeline.name = "URP_25D";
+                AssetDatabase.CreateAsset(pipeline, PipelinePath);
+            }
+            var so = new SerializedObject(pipeline);
+            var list = so.FindProperty("m_RendererDataList");
+            if (list != null && list.arraySize > 0)
+                list.GetArrayElementAtIndex(0).objectReferenceValue = renderer;
+            SetBool(so, "m_MainLightShadowsSupported", true);
+            SetBool(so, "m_AdditionalLightShadowsSupported", true);
+            SetBool(so, "m_SoftShadowsSupported", true);
+            SetBool(so, "m_ReflectionProbeBlending", true);
+            SetBool(so, "m_ReflectionProbeBoxProjection", true);
+            SetBool(so, "m_SupportsHDR", true);
+            SetFloat(so, "m_ShadowDistance", 80f);
+            SetInt(so, "m_ShadowCascadeCount", 2);
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return pipeline;
+        }
+
+        static void SetBool(SerializedObject so, string name, bool value)
+        {
+            var property = so.FindProperty(name);
+            if (property != null) property.boolValue = value;
+        }
+
+        static void SetFloat(SerializedObject so, string name, float value)
+        {
+            var property = so.FindProperty(name);
+            if (property != null) property.floatValue = value;
+        }
+
+        static void SetInt(SerializedObject so, string name, int value)
+        {
+            var property = so.FindProperty(name);
+            if (property != null) property.intValue = value;
         }
 
         [MenuItem("Poketato/Steps/Import Font")]
         public static void ImportFont()
         {
             var fi = AssetImporter.GetAtPath("Assets/Resources/Fonts/FusionPixel12.ttf") as TrueTypeFontImporter;
-            if (!fi) { Debug.LogWarning("[Poketato] font missing; run tools/subset_font.py"); return; }
+            if (fi == null) return;
             fi.fontSize = 12;
             fi.fontRenderingMode = FontRenderingMode.HintedRaster;
             fi.fontTextureCase = FontTextureCase.Dynamic;
@@ -110,39 +145,37 @@ namespace Poketato.EditorTools
 
             var camGo = new GameObject("Main Camera") { tag = "MainCamera" };
             var cam = camGo.AddComponent<Camera>();
-            cam.orthographic = true;
-            cam.orthographicSize = PixelScreen.Height / 2f / PixelArt.WorldPPU;
-            cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.47f, 0.72f, 0.36f);
-            cam.nearClipPlane = 0.1f;
-            cam.farClipPlane = 50f;
-            cam.allowHDR = false;
-            cam.allowMSAA = false;
-            camGo.transform.position = new Vector3(0, 0, -10);
+            cam.orthographic = false;
+            cam.fieldOfView = 40f;
+            cam.nearClipPlane = 0.3f;
+            cam.farClipPlane = 250f;
+            cam.allowHDR = true;
+            cam.clearFlags = CameraClearFlags.Skybox;
+            camGo.transform.position = new Vector3(0f, 16f, -12f);
+            camGo.transform.rotation = Quaternion.Euler(52f, 0f, 0f);
             camGo.AddComponent<AudioListener>();
-            var follow = camGo.AddComponent<CameraFollow2D>();
-            var screen = camGo.AddComponent<PixelScreen>();
-            screen.worldCamera = cam;
+            camGo.AddComponent<UniversalAdditionalCameraData>().renderShadows = true;
 
-            var lightGo = new GameObject("Global Light 2D");
-            var light = lightGo.AddComponent<Light2D>();
-            light.lightType = Light2D.LightType.Global;
-            light.intensity = 1f;
+            var sunGo = new GameObject("Sun");
+            var sun = sunGo.AddComponent<Light>();
+            sun.type = LightType.Directional;
+            sun.shadows = LightShadows.Soft;
+            sun.intensity = 1.15f;
+            sun.color = new Color(1f, 0.96f, 0.88f);
+            sunGo.transform.rotation = Quaternion.Euler(48f, -35f, 0f);
+            RenderSettings.sun = sun;
 
-            var world = new GameObject("World");
-            var map = world.AddComponent<ArenaMap>();
-            var view = world.AddComponent<ArenaView>();
-            view.cam = follow;
+            var probeGo = new GameObject("Reflection Probe");
+            var probe = probeGo.AddComponent<ReflectionProbe>();
+            probe.mode = ReflectionProbeMode.Realtime;
+            probe.refreshMode = ReflectionProbeRefreshMode.OnAwake;
+            probe.boxProjection = true;
+            probe.size = new Vector3(80f, 16f, 40f);
+            probe.resolution = 128;
 
-            var game = new GameObject("Game");
-            var ui = game.AddComponent<GameScreens>();
-            var perf = game.AddComponent<PerfStats>();
-            var gm = game.AddComponent<GameManager>();
-            gm.map = map;
-            gm.view = view;
-            gm.ui = ui;
-            gm.perf = perf;
-            gm.screen = screen;
+            var game = new GameObject("Mission");
+            game.AddComponent<MissionDriver>();
+            game.AddComponent<PerfStats>();
 
             Directory.CreateDirectory("Assets/Scenes");
             EditorSceneManager.SaveScene(scene, ScenePath);

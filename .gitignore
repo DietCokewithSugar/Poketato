@@ -29,5 +29,9 @@ node_modules
 __pycache__/
 .DS_Store
 
+# Headless simulation tests
+/unity/tests/**/bin/
+/unity/tests/**/obj/
+
 # Unity performance-test leftovers
 /unity/Assets/Resources/PerformanceTestRun*
