@@ -369,6 +369,135 @@ namespace Poketato.Extraction.Tests
         }
 
         [Fact]
+        public void EveryPlayableSpeciesCastsItsTypeSkills()
+        {
+            var types = new HashSet<PokeType>();
+            foreach (var species in SpeciesCatalog.Playable)
+            {
+                types.Add(species.primary);
+                if (species.secondary.HasValue) types.Add(species.secondary.Value);
+                var session = RunSession.Start("practice", 3);
+                session.rules.noCrit = true;
+                session.rules.enemiesIdle = true;
+                Assert.True(session.TryAddPlayer(new PlayerJoin
+                {
+                    speciesId = species.dex, level = 30, autopilot = false
+                }));
+                var player = session.players[0];
+                var basic = SkillTrees.Tree(species.primary)[0];
+                Assert.Equal(basic.id, player.actor.skills[0].id);
+                Assert.Equal(basic.moveZh, player.actor.skills[0].moveZh);
+                Assert.NotEmpty(player.actor.hotbar);
+                foreach (var node in player.actor.hotbar)
+                {
+                    Assert.True(species.HasType(node.type, null));
+                    Assert.False(node.passive);
+                    Assert.True(player.build.Rank(node.id) >= 1);
+                }
+                session.PlaceInRoom(player.id, "yard");
+                Actor enemy = null;
+                for (int i = 0; i < session.actors.Count; i++)
+                    if (session.actors[i].team == 1) enemy = session.actors[i];
+                Assert.NotNull(enemy);
+                Assert.Equal(SkillTrees.Tree(enemy.species.primary)[0].id, enemy.skills[0].id);
+                enemy.hp = enemy.maxHp = 100000f;
+                player.actor.x = enemy.x;
+                player.actor.z = enemy.z - 1.2f;
+                session.Tick(0.05f, new[]
+                {
+                    new PlayerInput { playerId = player.id, skill = 0, aimX = enemy.x, aimZ = enemy.z, hasAim = true }
+                });
+                Assert.True(player.actor.cd.ContainsKey(basic.id));
+                var hot = player.actor.hotbar[0];
+                session.Tick(0.05f, new[]
+                {
+                    new PlayerInput { playerId = player.id, skill = 1, aimX = enemy.x, aimZ = enemy.z, hasAim = true }
+                });
+                Assert.True(player.actor.cd.ContainsKey(hot.id));
+            }
+            Assert.Equal(15, types.Count);
+        }
+
+        [Fact]
+        public void WornRunDropsLeaveWithYouOrVanishOnDeath()
+        {
+            var session = RunSession.Start("practice", 8);
+            Assert.True(session.TryAddPlayer(new PlayerJoin { speciesId = 6, level = 12, autopilot = false }));
+            var player = session.players[0];
+            var fang = LootRoller.Plain("sharp-fang");
+            fang.foundThisRun = true;
+            player.bag.Add(fang);
+            var tooSoon = LootRoller.Plain("dragon-blade");
+            tooSoon.foundThisRun = true;
+            player.bag.Add(tooSoon);
+            float before = player.actor.stats.weaponDamage;
+            Assert.False(session.TryWear(player.id, 1));
+            Assert.True(session.TryWear(player.id, 0));
+            Assert.True(player.actor.stats.weaponDamage > before + 10f);
+            Assert.Equal("尖牙", player.worn["Weapon"].nameZh);
+            Assert.True(player.worn["Weapon"].foundThisRun);
+            session.PlaceInRoom(player.id, "exit");
+            Assert.True(session.TryExtract(player.id));
+            Assert.Contains(player.extractedItems, item => item.nameZh == "尖牙" && !item.foundThisRun);
+            Assert.False(player.worn.ContainsKey("Weapon"));
+            Assert.Empty(player.bag);
+
+            session = RunSession.Start("practice", 9);
+            Assert.True(session.TryAddPlayer(new PlayerJoin { speciesId = 25, level = 8, autopilot = false }));
+            player = session.players[0];
+            var cap = LootRoller.Plain("leaf-cap");
+            cap.foundThisRun = true;
+            player.bag.Add(cap);
+            Assert.True(session.TryWear(player.id, 0));
+            Assert.Equal("叶帽", player.worn["Helm"].nameZh);
+            session.Kill(player.id);
+            Assert.False(player.worn.ContainsKey("Helm"));
+            Assert.Empty(player.bag);
+            Assert.Empty(player.extractedItems);
+        }
+
+        [Fact]
+        public void FoggyForestRunLootsWearsAndExtracts()
+        {
+            var session = RunSession.Start("foggy-forest", 1);
+            session.rules.noCrit = true;
+            Assert.True(session.TryAddPlayer(new PlayerJoin { speciesId = 6, level = 20, autopilot = true }));
+            bool extracted = false;
+            for (int i = 0; i < 12000; i++)
+            {
+                session.Tick(0.05f, null);
+                if (session.players[0].extracted) { extracted = true; break; }
+                if (session.failed) break;
+            }
+            Assert.True(extracted, session.StatusLine());
+            Assert.True(session.ChestOpened("apple"));
+            Assert.NotEmpty(session.players[0].extractedItems);
+            foreach (var item in session.players[0].extractedItems)
+                Assert.False(item.foundThisRun);
+            Assert.Empty(session.players[0].bag);
+            Assert.True(session.players[0].extractedGold >= 80);
+            Assert.DoesNotContain(session.players[0].worn.Values, item => item.foundThisRun);
+        }
+
+        [Fact]
+        public void HiddenChestOpensAfterThePuzzle()
+        {
+            var session = RunSession.Start("dark-hill", 4);
+            session.rules.enemiesIdle = true;
+            Assert.True(session.TryAddPlayer(new PlayerJoin { speciesId = 94, level = 30, autopilot = false }));
+            var player = session.players[0];
+            session.PlaceInRoom(player.id, "seal");
+            session.Tick(0.05f, new[] { new PlayerInput { playerId = player.id, skill = -1, interact = true } });
+            Assert.True(session.puzzleSolved);
+            session.PlaceInRoom(player.id, "cache");
+            int before = player.bag.Count;
+            session.Tick(0.05f, new[] { new PlayerInput { playerId = player.id, skill = -1, interact = true } });
+            Assert.True(session.ChestOpened("cache"));
+            Assert.Equal(before + 2, player.bag.Count);
+            Assert.All(player.bag, item => Assert.True(item.foundThisRun));
+        }
+
+        [Fact]
         public void MetaIdsMatchTheDesignContract()
         {
             Assert.True(MetaCatalog.UniqueIds(MetaCatalog.Shop.Select(s => s.id)));

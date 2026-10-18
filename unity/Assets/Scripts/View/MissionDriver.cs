@@ -29,6 +29,10 @@ namespace Poketato
         Material cutout;
         int skill;
         bool interact;
+        int speciesCursor;
+        int runSeed = 1;
+        readonly List<CombatFx> fx = new List<CombatFx>();
+        readonly List<Transform> fxBodies = new List<Transform>();
 
         void Start()
         {
@@ -37,27 +41,63 @@ namespace Poketato
             speciesId = Parse(WebBridge.Param("species"), speciesId);
             level = Parse(WebBridge.Param("level"), level);
             if (WebBridge.Param("auto") == "0") autopilot = false;
-            int seed = Parse(WebBridge.Param("seed"), 1);
-            session = RunSession.Start(missionId, seed);
-            session.rules.noCrit = false;
+            runSeed = Parse(WebBridge.Param("seed"), 1);
+            var roster = SpeciesCatalog.Playable;
+            speciesCursor = 0;
+            for (int i = 0; i < roster.Count; i++)
+                if (roster[i].dex == speciesId) speciesCursor = i;
+            if (roster.Count > 0) speciesId = roster[speciesCursor].dex;
+            SetupStage();
+            BeginRun();
+        }
+
+        void BeginRun()
+        {
+            if (world != null) Destroy(world.gameObject);
+            world = null;
+            bodies.Clear();
+            fxBodies.Clear();
+            var roster = SpeciesCatalog.Playable;
+            if (roster.Count > 0)
+            {
+                speciesCursor = (speciesCursor % roster.Count + roster.Count) % roster.Count;
+                speciesId = roster[speciesCursor].dex;
+            }
+            session = RunSession.Start(missionId, runSeed);
             session.TryAddPlayer(new PlayerJoin
             {
                 speciesId = speciesId,
                 level = level,
                 autopilot = autopilot
             });
-            SetupStage();
             BuildDungeon();
+        }
+
+        void CycleSpecies(int dir)
+        {
+            var roster = SpeciesCatalog.Playable;
+            if (roster.Count == 0) return;
+            speciesCursor = (speciesCursor + dir + roster.Count) % roster.Count;
+            BeginRun();
         }
 
         void Update()
         {
             if (session == null || session.players.Count == 0) return;
             var player = session.players[0];
+            var keyboard = Keyboard.current;
+            if (keyboard != null && (keyboard.leftBracketKey.wasPressedThisFrame || keyboard.rightBracketKey.wasPressedThisFrame))
+            {
+                CycleSpecies(keyboard.rightBracketKey.wasPressedThisFrame ? 1 : -1);
+                return;
+            }
             ReadKeys(player);
+            if (keyboard != null && keyboard.gKey.wasPressedThisFrame)
+                session.TryWearBest(player.id);
             ExtractionInput[] inputs = null;
             if (!player.autopilot && player.alive && !player.extracted)
             {
+                if (skill < 0 && !interact && BasicInRange(player)) skill = 0;
                 Vector2 move = ReadMove();
                 Vector3 aim = AimOnFloor();
                 inputs = new[]
@@ -79,7 +119,23 @@ namespace Poketato
             interact = false;
             session.Tick(Time.deltaTime, inputs);
             SyncBodies();
+            SyncFx();
             Follow();
+        }
+
+        bool BasicInRange(PlayerState player)
+        {
+            if (player.actor.skills.Count == 0) return false;
+            float range = SkillTrees.CastRange(player.actor.skills[0]);
+            for (int i = 0; i < session.actors.Count; i++)
+            {
+                var other = session.actors[i];
+                if (!other.alive || other.team != 1 || other.roomId != player.roomId) continue;
+                float dx = other.x - player.actor.x;
+                float dz = other.z - player.actor.z;
+                if (dx * dx + dz * dz <= range * range) return true;
+            }
+            return false;
         }
 
         void SetupStage()
@@ -277,7 +333,19 @@ namespace Poketato
                     var face = Face(actor.species.primary);
                     if (material.HasProperty("_BaseMap")) material.SetTexture("_BaseMap", face);
                     else material.mainTexture = face;
-                    go.GetComponent<Renderer>().sharedMaterial = material;
+                    var renderer = go.GetComponent<Renderer>();
+                    renderer.sharedMaterial = material;
+                    renderer.shadowCastingMode = ShadowCastingMode.On;
+                    renderer.receiveShadows = true;
+                    var pip = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    pip.name = "Worn";
+                    var pipCollider = pip.GetComponent<Collider>();
+                    if (pipCollider != null) Destroy(pipCollider);
+                    pip.transform.SetParent(go.transform, false);
+                    pip.transform.localPosition = new Vector3(0.42f, -0.42f, 0f);
+                    pip.transform.localScale = new Vector3(0.28f, 0.28f, 0.08f);
+                    pip.GetComponent<Renderer>().sharedMaterial = new Material(lit);
+                    pip.SetActive(false);
                     body = go.transform;
                     body.SetParent(world, true);
                     float height = actor.isBoss ? 2.4f : 1.5f;
@@ -285,6 +353,20 @@ namespace Poketato
                     bodies[actor.id] = body;
                 }
                 body.position = new Vector3(actor.x, actor.isBoss ? 1.3f : 0.9f, actor.z);
+                var worn = body.Find("Worn");
+                if (worn != null && actor.playerId > 0)
+                {
+                    var owner = session.FindPlayer(actor.playerId);
+                    bool show = owner != null && owner.worn.Count > 0;
+                    worn.gameObject.SetActive(show);
+                    if (show)
+                    {
+                        var pipMaterial = worn.GetComponent<Renderer>().sharedMaterial;
+                        var pipColor = RarityColor(BestRarity(owner));
+                        if (pipMaterial.HasProperty("_BaseColor")) pipMaterial.SetColor("_BaseColor", pipColor);
+                        else pipMaterial.color = pipColor;
+                    }
+                }
                 var flat = cam.transform.forward;
                 flat.y = 0f;
                 if (flat.sqrMagnitude > 0.001f) body.rotation = Quaternion.LookRotation(flat);
@@ -296,6 +378,38 @@ namespace Poketato
             {
                 Destroy(bodies[stale[i]].gameObject);
                 bodies.Remove(stale[i]);
+            }
+        }
+
+        void SyncFx()
+        {
+            if (world == null) return;
+            session.CopyCombatFx(fx);
+            while (fxBodies.Count < fx.Count)
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                var collider = go.GetComponent<Collider>();
+                if (collider != null) Destroy(collider);
+                go.transform.SetParent(world, true);
+                var material = new Material(lit);
+                if (material.HasProperty("_EmissionColor")) material.EnableKeyword("_EMISSION");
+                go.GetComponent<Renderer>().sharedMaterial = material;
+                fxBodies.Add(go.transform);
+            }
+            for (int i = 0; i < fxBodies.Count; i++)
+            {
+                bool on = i < fx.Count;
+                if (fxBodies[i] != null) fxBodies[i].gameObject.SetActive(on);
+                if (!on) continue;
+                var shot = fx[i];
+                float diameter = shot.zone ? Mathf.Max(0.6f, shot.radius * 0.35f) : 0.45f;
+                fxBodies[i].position = new Vector3(shot.x, shot.zone ? 0.2f : 0.7f, shot.z);
+                fxBodies[i].localScale = new Vector3(diameter, shot.zone ? 0.18f : 0.45f, diameter);
+                var material = fxBodies[i].GetComponent<Renderer>().sharedMaterial;
+                var color = TypeColor(shot.type);
+                if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
+                else material.color = color;
+                if (material.HasProperty("_EmissionColor")) material.SetColor("_EmissionColor", color * 1.6f);
             }
         }
 
@@ -319,6 +433,26 @@ namespace Poketato
             texture.Apply();
             faces[type] = texture;
             return texture;
+        }
+
+        static Rarity BestRarity(PlayerState player)
+        {
+            var best = Rarity.Normal;
+            foreach (var pair in player.worn)
+                if (pair.Value.rarity > best) best = pair.Value.rarity;
+            return best;
+        }
+
+        static Color RarityColor(Rarity rarity)
+        {
+            switch (rarity)
+            {
+                case Rarity.Magic: return new Color(0.35f, 0.55f, 1f);
+                case Rarity.Rare: return new Color(1f, 0.82f, 0.2f);
+                case Rarity.Set: return new Color(0.25f, 0.85f, 0.35f);
+                case Rarity.Unique: return new Color(0.85f, 0.55f, 0.15f);
+                default: return new Color(0.85f, 0.85f, 0.85f);
+            }
         }
 
         static Color TypeColor(PokeType type)
@@ -364,7 +498,8 @@ namespace Poketato
             if (keyboard.digit4Key.wasPressedThisFrame) skill = 4;
             if (keyboard.jKey.wasPressedThisFrame || (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame))
                 skill = 0;
-            if (keyboard.eKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame) interact = true;
+            if (keyboard.eKey.wasPressedThisFrame || keyboard.fKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame)
+                interact = true;
         }
 
         static Vector2 ReadMove()
@@ -402,13 +537,68 @@ namespace Poketato
             foreach (var room in session.mission.rooms)
                 if (room.id == player.roomId) roomName = room.nameZh;
             string state = player.extracted ? "已撤离" : !player.alive ? "倒下，本局掉落已丢失" : session.failed ? "任务失败" : "搜索中";
-            GUI.Label(new Rect(16, 12, 900, 28), session.mission.nameZh + "  " + player.species.nameZh + "  " + state);
-            GUI.Label(new Rect(16, 36, 900, 28),
+            GUI.Label(new Rect(16, 12, 1100, 28),
+                session.mission.nameZh + "  " + player.species.nameZh
+                + "  " + (speciesCursor + 1) + "/30  " + state);
+            GUI.Label(new Rect(16, 36, 1100, 28),
                 "房间 " + roomName + "   生命 " + Mathf.CeilToInt(player.actor.hp) + "/" + Mathf.CeilToInt(player.actor.maxHp)
-                + "   本局金币 " + player.runGold + "   背包 " + player.bag.Count);
-            GUI.Label(new Rect(16, 60, 1100, 28),
-                (player.autopilot ? "自动战斗（T 关闭）" : "手动：WASD 移动，鼠标瞄准，J/左键普攻，1-4 技能，E 交互")
-                + "    死亡只丢本局掉落");
+                + "   本局金币 " + player.runGold + "   背包 " + player.bag.Count
+                + "   带出 " + player.extractedItems.Count);
+            GUI.Label(new Rect(16, 60, 1200, 28), "技能  " + SkillLine(player));
+            GUI.Label(new Rect(16, 84, 1200, 28), "穿着  " + WornLine(player));
+            GUI.Label(new Rect(16, 108, 1200, 48), "掉落  " + BagLine(player));
+            GUI.Label(new Rect(16, 156, 1200, 48),
+                (player.autopilot ? "自动战斗（T 关闭）。[ ] 换 30 只里的另一只并重开。" : "WASD 移动，鼠标瞄准，近处自动普攻，1-4 技能，F 交互，G 穿上更好的掉落。")
+                + " 撤离带走本局装备，倒下就丢。");
+        }
+
+        static string SkillLine(PlayerState player)
+        {
+            if (player.actor.skills.Count == 0) return "无";
+            var text = "普攻 " + player.actor.skills[0].moveZh;
+            for (int i = 0; i < player.actor.hotbar.Count; i++)
+                text += "   " + (i + 1) + " " + player.actor.hotbar[i].moveZh;
+            return text;
+        }
+
+        static string WornLine(PlayerState player)
+        {
+            if (player.worn.Count == 0) return "空";
+            var text = "";
+            foreach (var pair in player.worn)
+            {
+                if (text.Length > 0) text += "  ";
+                text += pair.Key + " " + pair.Value.nameZh;
+            }
+            return text;
+        }
+
+        static string BagLine(PlayerState player)
+        {
+            if (player.extracted) return ExtractLine(player);
+            if (player.bag.Count == 0) return player.alive ? "还没有" : "本局掉落已删除";
+            var text = "";
+            int shown = 0;
+            for (int i = player.bag.Count - 1; i >= 0 && shown < 4; i--, shown++)
+            {
+                if (text.Length > 0) text += "  ";
+                text += player.bag[i].nameZh;
+            }
+            if (player.bag.Count > shown) text += "  …";
+            return text;
+        }
+
+        static string ExtractLine(PlayerState player)
+        {
+            if (player.extractedItems.Count == 0) return "已撤离，没有带出装备";
+            var text = "已放进仓库：";
+            int shown = 0;
+            for (int i = 0; i < player.extractedItems.Count && shown < 4; i++, shown++)
+            {
+                if (shown > 0) text += "  ";
+                text += player.extractedItems[i].nameZh;
+            }
+            return text;
         }
 
         static int Parse(string text, int fallback)

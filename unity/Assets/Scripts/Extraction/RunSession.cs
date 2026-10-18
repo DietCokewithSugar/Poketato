@@ -14,6 +14,13 @@ namespace Poketato.Extraction
         public List<ItemInstance> gear;
     }
 
+    public struct CombatFx
+    {
+        public float x, z, radius;
+        public PokeType type;
+        public bool zone;
+    }
+
     public struct PlayerInput
     {
         public int playerId;
@@ -129,6 +136,7 @@ namespace Poketato.Extraction
         public float x, z, radius, life, tick, every, damage;
         public int sourceId, team;
         public string skillId, move;
+        public PokeType type;
     }
 
     public sealed class RunSession
@@ -265,8 +273,24 @@ namespace Poketato.Extraction
             if (room.def.kind != RoomKind.Extract && room.def.kind != RoomKind.EarlyExtract) return false;
             if (room.def.kind == RoomKind.Extract && HasBoss() && !BossDown()) return false;
             player.extracted = true;
-            player.extractedItems = new List<ItemInstance>(player.bag);
+            var kept = new List<ItemInstance>(player.bag.Count + 4);
+            for (int i = 0; i < player.bag.Count; i++)
+            {
+                var item = player.bag[i];
+                item.foundThisRun = false;
+                kept.Add(item);
+            }
             player.bag.Clear();
+            var wornKeys = new List<string>(player.worn.Keys);
+            for (int i = 0; i < wornKeys.Count; i++)
+            {
+                var item = player.worn[wornKeys[i]];
+                if (!item.foundThisRun) continue;
+                item.foundThisRun = false;
+                kept.Add(item);
+                player.worn.Remove(wornKeys[i]);
+            }
+            player.extractedItems = kept;
             int bonus = mission.clearBonus;
             if (room.def.kind == RoomKind.EarlyExtract) bonus /= 2;
             player.extractedGold = player.runGold + bonus;
@@ -317,6 +341,106 @@ namespace Poketato.Extraction
             for (int i = 0; i < players.Count; i++)
                 if (players[i].id == id) return players[i];
             return null;
+        }
+
+        public bool TryWear(int playerId, int bagIndex)
+        {
+            var player = FindPlayer(playerId);
+            if (player == null || !player.alive || player.extracted) return false;
+            if (bagIndex < 0 || bagIndex >= player.bag.Count) return false;
+            var item = player.bag[bagIndex];
+            if (item.durability <= 0f) return false;
+            var basis = ItemCatalog.GetBase(item.baseId);
+            if (player.level < basis.reqLevel) return false;
+            ItemInstance displaced;
+            string key = SlotFor(player, basis, out displaced);
+            player.bag.RemoveAt(bagIndex);
+            if (player.worn.ContainsKey(key)) player.bag.Add(player.worn[key]);
+            player.worn[key] = item;
+            Recompute(player);
+            return true;
+        }
+
+        public bool TryWearBest(int playerId)
+        {
+            var player = FindPlayer(playerId);
+            if (player == null || !player.alive || player.extracted) return false;
+            bool any = false;
+            int guard = 0;
+            while (guard++ < 16)
+            {
+                int bestIndex = -1;
+                float bestGain = 0.05f;
+                for (int i = 0; i < player.bag.Count; i++)
+                {
+                    float gain = WearGain(player, player.bag[i]);
+                    if (gain > bestGain) { bestGain = gain; bestIndex = i; }
+                }
+                if (bestIndex < 0 || !TryWear(playerId, bestIndex)) break;
+                any = true;
+            }
+            return any;
+        }
+
+        public bool ChestOpened(string roomId)
+        {
+            RoomRuntime room;
+            return roomById.TryGetValue(roomId, out room) && room.chestOpened;
+        }
+
+        public void CopyCombatFx(List<CombatFx> into)
+        {
+            into.Clear();
+            for (int i = 0; i < projectiles.Count; i++)
+            {
+                var proj = projectiles[i];
+                into.Add(new CombatFx { x = proj.x, z = proj.z, radius = 0.35f, type = proj.type, zone = false });
+            }
+            for (int i = 0; i < zones.Count; i++)
+            {
+                var zone = zones[i];
+                into.Add(new CombatFx { x = zone.x, z = zone.z, radius = zone.radius, type = zone.type, zone = true });
+            }
+        }
+
+        static float ItemScore(ItemInstance item)
+        {
+            if (item == null || item.durability <= 0f) return -1f;
+            var basis = ItemCatalog.GetBase(item.baseId);
+            float score = basis.weaponDamage + basis.armor * 0.5f + (int)item.rarity;
+            if (basis.spell) score += 6f;
+            for (int i = 0; i < item.affixes.Count; i++) score += Math.Abs(item.affixes[i].value);
+            return score;
+        }
+
+        float WearGain(PlayerState player, ItemInstance item)
+        {
+            if (item == null || item.durability <= 0f) return -1f;
+            var basis = ItemCatalog.GetBase(item.baseId);
+            if (player.level < basis.reqLevel) return -1f;
+            ItemInstance displaced;
+            string key = SlotFor(player, basis, out displaced);
+            if (!player.worn.ContainsKey(key)) return ItemScore(item) + 1f;
+            return ItemScore(item) - ItemScore(player.worn[key]);
+        }
+
+        static string SlotFor(PlayerState player, ItemBase basis, out ItemInstance displaced)
+        {
+            displaced = null;
+            if (basis.slot != Slot.Ring)
+            {
+                string key = basis.slot.ToString();
+                if (player.worn.ContainsKey(key)) displaced = player.worn[key];
+                return key;
+            }
+            ItemInstance left, right;
+            bool hasLeft = player.worn.TryGetValue("RingL", out left);
+            bool hasRight = player.worn.TryGetValue("RingR", out right);
+            if (!hasLeft) return "RingL";
+            if (!hasRight) return "RingR";
+            if (ItemScore(left) <= ItemScore(right)) { displaced = left; return "RingL"; }
+            displaced = right;
+            return "RingR";
         }
 
         void Wear(PlayerState player, ItemInstance item)
@@ -590,9 +714,28 @@ namespace Poketato.Extraction
             actor.facing = (float)Math.Atan2(x, z);
             float nx = actor.x + x * speed * dt;
             float nz = actor.z + z * speed * dt;
-            if (Walkable(nx, nz)) { actor.x = nx; actor.z = nz; return; }
-            if (Walkable(nx, actor.z)) { actor.x = nx; return; }
-            if (Walkable(actor.x, nz)) actor.z = nz;
+            if (CanStep(actor, nx, nz)) { actor.x = nx; actor.z = nz; return; }
+            if (CanStep(actor, nx, actor.z)) { actor.x = nx; return; }
+            if (CanStep(actor, actor.x, nz)) actor.z = nz;
+        }
+
+        bool CanStep(Actor actor, float x, float z)
+        {
+            if (actor.team == 1) return InsideRoom(actor.roomId, x, z);
+            if (!Walkable(x, z)) return false;
+            var room = RoomAt(x, z);
+            if (room == null || actor.playerId <= 0) return true;
+            var player = FindPlayer(actor.playerId);
+            return player == null || CanBeHere(player.roomId, room);
+        }
+
+        bool InsideRoom(string roomId, float x, float z)
+        {
+            RoomRuntime room;
+            if (roomId == null || !roomById.TryGetValue(roomId, out room)) return false;
+            float minX, maxX, minZ, maxZ;
+            DungeonLayout.Interior(room.def, out minX, out maxX, out minZ, out maxZ);
+            return x >= minX && x <= maxX && z >= minZ && z <= maxZ;
         }
 
         PlayerInput Autopilot(PlayerState player, PlayerInput existing)
@@ -600,6 +743,26 @@ namespace Poketato.Extraction
             var input = existing;
             input.playerId = player.id;
             input.skill = -1;
+            TryWearBest(player.id);
+            RoomRuntime hereRoom;
+            if (roomById.TryGetValue(player.roomId, out hereRoom))
+            {
+                bool closedChest = (hereRoom.def.kind == RoomKind.Treasure || hereRoom.def.kind == RoomKind.Secret)
+                    && !hereRoom.chestOpened;
+                bool needsClick = closedChest || (hereRoom.def.puzzle && !puzzleSolved);
+                if (needsClick)
+                {
+                    float cx, cz;
+                    DungeonLayout.Center(hereRoom.def, out cx, out cz);
+                    input.moveX = cx - player.actor.x;
+                    input.moveZ = cz - player.actor.z;
+                    input.aimX = cx;
+                    input.aimZ = cz;
+                    input.hasAim = true;
+                    input.interact = true;
+                    return input;
+                }
+            }
             var enemy = NearestEnemy(player.roomId, player.actor.x, player.actor.z);
             if (enemy != null)
             {
@@ -619,7 +782,8 @@ namespace Poketato.Extraction
                 input.moveZ = enemy.z - player.actor.z;
                 return input;
             }
-            string goal = NextGoal(player.roomId);
+            string goal = AdjacentSearch(player.roomId);
+            if (goal == null) goal = NextGoal(player.roomId);
             if (goal == null || goal == player.roomId)
             {
                 RoomRuntime here;
@@ -790,7 +954,7 @@ namespace Poketato.Extraction
                 x = aimX, z = aimZ, radius = 2.8f, life = 3f, every = 0.5f,
                 damage = RollAmount(actor, node, false) * 0.35f,
                 sourceId = actor.id, team = actor.team,
-                skillId = node.id, move = node.moveZh
+                skillId = node.id, move = node.moveZh, type = node.type
             });
         }
 
@@ -806,7 +970,7 @@ namespace Poketato.Extraction
             {
                 float nx = actor.x + dx * step * (i / 4f);
                 float nz = actor.z + dz * step * (i / 4f);
-                if (!Walkable(nx, nz)) break;
+                if (!CanStep(actor, nx, nz)) break;
                 actor.x = nx;
                 actor.z = nz;
                 for (int a = 0; a < actors.Count; a++)
@@ -1146,7 +1310,7 @@ namespace Poketato.Extraction
                 return;
             }
             if (room.def.puzzle) puzzleSolved = true;
-            if (room.def.kind == RoomKind.Treasure && !room.chestOpened)
+            if ((room.def.kind == RoomKind.Treasure || room.def.kind == RoomKind.Secret) && !room.chestOpened)
             {
                 room.chestOpened = true;
                 for (int n = 0; n < 2; n++)
@@ -1172,6 +1336,21 @@ namespace Poketato.Extraction
                 if (players[i].alive && !players[i].extracted) return false;
             }
             return !anyExtracted;
+        }
+
+        string AdjacentSearch(string from)
+        {
+            RoomRuntime here;
+            if (!roomById.TryGetValue(from, out here) || !here.cleared) return null;
+            for (int i = 0; i < here.def.links.Length; i++)
+            {
+                RoomRuntime other;
+                if (!roomById.TryGetValue(here.def.links[i], out other) || !other.def.optional) continue;
+                bool chest = other.def.kind == RoomKind.Treasure || other.def.kind == RoomKind.Secret;
+                if (chest && !other.chestOpened && (!other.def.requiresPuzzle || puzzleSolved)) return other.def.id;
+                if (other.def.puzzle && !puzzleSolved) return other.def.id;
+            }
+            return null;
         }
 
         string NextGoal(string from)
