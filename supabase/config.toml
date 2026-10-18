@@ -1,0 +1,10 @@
+# 本地 Supabase CLI 用。云端项目以 Dashboard 和迁移文件为准。
+project_id = "poketato"
+
+[api]
+enabled = true
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+
+[db]
+major_version = 15

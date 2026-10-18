@@ -1,0 +1,18 @@
+{
+  "name": "Poketato.Backend.Editor",
+  "rootNamespace": "Poketato.Backend.EditorTools",
+  "references": [
+    "Poketato.Backend"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

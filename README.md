@@ -16,7 +16,22 @@ Render 与 Supabase 的后续计划见 **[docs/DEPLOY_PLAN.md](docs/DEPLOY_PLAN.
 |---|---|
 | ![即时战斗](docs/screenshots/03-battle.jpg) | |
 
-## 部署到 Render（静态站点）
+## 搜打撤联机后端
+
+仓库里现在能玩的 WebGL 还是单机原型。搜打撤（进本、实时打、撤离才留战利品）的账号、库存、商城、战队、成就、排行榜和对局结算在：
+
+- `supabase/migrations/`：表、RLS、购买和结算函数
+- `server/`：WebSocket 游戏服。普通关 4 人，Boss 和工会副本 8 人，世界战 20 人。伤害和每个技能的输出由服务器写入 Supabase
+- `unity/Assets/Scripts/Backend/`：WebGL 可用的 Supabase 客户端
+- [`docs/deployment-setup.md`](docs/deployment-setup.md)：要准备哪些密钥、分别放在哪里
+
+## 部署到 Render（静态站点 + 游戏服）
+
+`render.yaml` 有两个服务：静态站点 `poketato-webgl`，以及 Docker WebSocket 游戏服 `poketato-server`。
+密钥清单和点击步骤见 [docs/deployment-setup.md](docs/deployment-setup.md)。
+当前提交的 `webgl/` 仍是单机原型；联机客户端要等 GitHub Actions 用 Unity 6 LTS 重新构建后才进播放器。
+
+下面是静态站点本身的说明。
 
 Render 不能运行 Unity，所以 WebGL 播放器在本地/CI 构建好后**提交到仓库的 `webgl/` 目录**，Render 只负责原样托管。
 构建使用 **gzip + Unity 解压回退（decompression fallback）**：浏览器端的加载器会自己解压 `.unityweb` 文件，
@@ -25,15 +40,15 @@ Render 不能运行 Unity，所以 WebGL 播放器在本地/CI 构建好后**提
 **方式 A：Blueprint（推荐）** — 仓库根目录的 [`render.yaml`](render.yaml) 已经写好：
 
 1. Render 控制台 → **New → Blueprint** → 连接 `DietCokewithSugar/Poketato`
-2. **Branch** 选 `cursor/unity-urp-mvp-b91d`（合并 PR 后改用 `main`）
-3. 确认创建，Render 会建立名为 `poketato-webgl` 的静态站点
+2. **Branch** 选要部署的分支（合并后用 `main`）
+3. 按提示填写 Supabase 密钥。Render 会建立静态站点 `poketato-webgl` 和游戏服 `poketato-server`
 
 **方式 B：手动创建 Static Site** — 控制台 → **New → Static Site**，填写：
 
 | 设置 | 值 |
 |---|---|
 | Repository | `DietCokewithSugar/Poketato` |
-| Branch | `cursor/unity-urp-mvp-b91d`（合并 PR 后用 `main`） |
+| Branch | 要部署的分支（合并后用 `main`） |
 | Root Directory | 留空（仓库根目录） |
 | Build Command | `echo "Using the prebuilt Unity WebGL player committed in webgl/"` |
 | Publish Directory | `webgl` |

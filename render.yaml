@@ -1,17 +1,45 @@
-# Render Blueprint: serves the prebuilt Unity WebGL player in webgl/ as a Static Site.
-# Render cannot run Unity, so the player is built locally/CI (see README) and committed.
-# The build uses gzip + Unity's JS decompression fallback, so no Content-Encoding headers are required.
+# Poketato：WebGL 静态站 + WebSocket 游戏服。
+# Unity 不能在 Render 上编译，播放器由 GitHub Actions（Unity 6 LTS）构建后放进 webgl/。
+# 游戏服只保存权威对局，账号和库存在 Supabase。密钥在 Blueprint 创建时填写，不会写进仓库。
 services:
   - type: web
     name: poketato-webgl
     runtime: static
-    buildCommand: echo "Using the prebuilt Unity WebGL player committed in webgl/"
+    region: singapore
+    buildCommand: echo "Using the Unity WebGL player in webgl/"
     staticPublishPath: ./webgl
     headers:
-      # File names under Build/ contain content hashes, so they can be cached forever.
       - path: /Build/*
         name: Cache-Control
         value: public, max-age=31536000, immutable
       - path: /index.html
         name: Cache-Control
         value: no-cache
+
+  - type: web
+    name: poketato-server
+    runtime: docker
+    region: singapore
+    plan: starter
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: ./server
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REQUIRE_AUTH
+        value: "1"
+      - key: MATCH_DURATION_MS
+        value: "180000"
+      - key: QUEUE_WAIT_MS
+        value: "20000"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: WEBGL_ORIGIN
+        sync: false
+      - key: PUBLIC_URL
+        sync: false

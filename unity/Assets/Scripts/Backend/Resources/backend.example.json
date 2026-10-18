@@ -1,0 +1,5 @@
+{
+  "url": "https://YOUR_PROJECT.supabase.co",
+  "anonKey": "YOUR_SUPABASE_ANON_KEY",
+  "gameServer": "wss://poketato-server.onrender.com/ws"
+}
