@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Poketato.Extraction;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ExtractionInput = Poketato.Extraction.PlayerInput;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
@@ -54,14 +55,14 @@ namespace Poketato
             if (session == null || session.players.Count == 0) return;
             var player = session.players[0];
             ReadKeys(player);
-            PlayerInput[] inputs = null;
+            ExtractionInput[] inputs = null;
             if (!player.autopilot && player.alive && !player.extracted)
             {
                 Vector2 move = ReadMove();
                 Vector3 aim = AimOnFloor();
                 inputs = new[]
                 {
-                    new PlayerInput
+                    new ExtractionInput
                     {
                         playerId = player.id,
                         moveX = move.x,
