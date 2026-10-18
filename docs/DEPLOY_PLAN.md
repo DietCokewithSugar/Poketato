@@ -1,5 +1,7 @@
 # Render 与 Supabase 计划
 
+> 历史文档里的静态站步骤仍然描述 `webgl/` 里的旧原型。搜打撤的游戏服和存档不在这份旧计划里改 `render.yaml`。玩法见 [game-design.md](game-design.md)。
+
 ## 现在：Render 静态站点（已可部署）
 
 - `render.yaml` 定义一个静态站点 `poketato-webgl`，发布目录 `webgl/`，构建命令是空操作（播放器已预构建并提交）。
