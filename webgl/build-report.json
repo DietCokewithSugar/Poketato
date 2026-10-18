@@ -2,8 +2,8 @@
     "result": "Succeeded",
     "compression": "gzip",
     "unityVersion": "6000.3.26f1",
-    "totalSizeBytes": 33342870,
-    "totalTimeSeconds": 304.6697692871094,
+    "totalSizeBytes": 33327707,
+    "totalTimeSeconds": 132.9092254638672,
     "errors": 0,
     "warnings": 0
 }

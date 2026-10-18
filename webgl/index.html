@@ -28,9 +28,9 @@
     var params = new URLSearchParams(location.search);
     var buildUrl = "Build";
     var config = {
-      dataUrl: buildUrl + "/633c855b072eebe0614c9b55f7766ceb.data.unityweb",
-      frameworkUrl: buildUrl + "/4da60ee0dccd129e34903069bcdd2178.framework.js.unityweb",
-      codeUrl: buildUrl + "/ad61fb7a46e8ad4b0f4a0d988af8061e.wasm.unityweb",
+      dataUrl: buildUrl + "/e097bb9231ee3f426bfcace0713be4b2.data.unityweb",
+      frameworkUrl: buildUrl + "/21d32b3d3245c4e1fd7edea2a10582d9.framework.js.unityweb",
+      codeUrl: buildUrl + "/f17ae7ee3c8df1b0db7dde72863f7a40.wasm.unityweb",
       streamingAssetsUrl: "StreamingAssets",
       companyName: "Poketato",
       productName: "Poketato",
@@ -40,7 +40,7 @@
     };
     var canvas = document.querySelector("#unity-canvas");
     var script = document.createElement("script");
-    script.src = buildUrl + "/a4867b85992aee1f879625bf8f72f284.loader.js";
+    script.src = buildUrl + "/34c45a6a9dddc26cda91956b28c31db6.loader.js";
     script.onload = function () {
       window.__poketato.marks.loaderReady = performance.now();
       createUnityInstance(canvas, config, function (progress) {

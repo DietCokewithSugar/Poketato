@@ -48,6 +48,7 @@ namespace Poketato
                 if (roster[i].dex == speciesId) speciesCursor = i;
             if (roster.Count > 0) speciesId = roster[speciesCursor].dex;
             SetupStage();
+            if (lit == null) return;
             BeginRun();
         }
 
@@ -173,16 +174,37 @@ namespace Poketato
                 ? new Color(0.12f, 0.12f, 0.16f)
                 : new Color(0.34f, 0.36f, 0.4f);
 
-            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) shader = Shader.Find("Standard");
-            lit = new Material(shader);
-            lit.SetFloat("_Smoothness", 0.82f);
-            lit.SetFloat("_Metallic", 0.22f);
-            cutout = new Material(shader);
-            cutout.SetFloat("_AlphaClip", 1f);
-            cutout.SetFloat("_Cutoff", 0.3f);
-            cutout.EnableKeyword("_ALPHATEST_ON");
-            cutout.SetFloat("_Cull", 0f);
+            // Shader.Find does not keep package shaders in a player build. These Resources
+            // materials are the references that pull URP Lit, alpha clip, and emission in.
+            lit = InstantiateLit("Rendering/Lit", 0.82f, 0.22f, false);
+            cutout = InstantiateLit("Rendering/LitCutout", 0.5f, 0f, true);
+        }
+
+        static Material InstantiateLit(string resource, float smoothness, float metallic, bool cutout)
+        {
+            var source = Resources.Load<Material>(resource);
+            Material material = source != null ? new Material(source) : null;
+            if (material == null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/Lit");
+                if (shader == null) shader = Shader.Find("Standard");
+                if (shader == null)
+                {
+                    Debug.LogError("[Poketato] URP Lit is missing from the player, so the dungeon cannot be drawn.");
+                    return null;
+                }
+                material = new Material(shader);
+            }
+            material.SetFloat("_Smoothness", smoothness);
+            material.SetFloat("_Metallic", metallic);
+            if (cutout)
+            {
+                material.SetFloat("_AlphaClip", 1f);
+                material.SetFloat("_Cutoff", 0.3f);
+                material.EnableKeyword("_ALPHATEST_ON");
+                material.SetFloat("_Cull", 0f);
+            }
+            return material;
         }
 
         void BuildDungeon()
