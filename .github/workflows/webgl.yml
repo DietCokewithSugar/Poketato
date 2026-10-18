@@ -1,0 +1,66 @@
+name: WebGL
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "unity/**"
+      - ".github/workflows/webgl.yml"
+  pull_request:
+    paths:
+      - "unity/**"
+      - ".github/workflows/webgl.yml"
+
+jobs:
+  license:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          if [ -n "$UNITY_LICENSE" ] && [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Skip WebGL build. Add Actions secrets UNITY_LICENSE, UNITY_EMAIL and UNITY_PASSWORD (Unity 6 Personal .ulf)."
+          fi
+
+  build:
+    needs: license
+    if: needs.license.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: unity/Library
+          key: Library-WebGL-${{ hashFiles('unity/Assets/**', 'unity/Packages/**', 'unity/ProjectSettings/**') }}
+          restore-keys: |
+            Library-WebGL-
+      - name: Build with Unity 6 LTS
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: unity
+          # Unity 6.3 LTS patch 6000.3.26f1 (2026-10-08, changeset de8167e7440c).
+          # Same version as unity/ProjectSettings/ProjectVersion.txt and the design doc.
+          # 6000.0.85f1 is the older 6.0 line and is not the project editor.
+          unityVersion: 6000.3.26f1
+          targetPlatform: WebGL
+          buildMethod: Poketato.EditorTools.PoketatoBuild.WebGL
+          buildsPath: webgl
+          allowDirtyBuild: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: webgl
+          path: webgl
+          if-no-files-found: error

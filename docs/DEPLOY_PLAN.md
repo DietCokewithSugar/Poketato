@@ -1,5 +1,10 @@
 # Render 与 Supabase 计划
 
+> 搜打撤联机的现行步骤在 [deployment-setup.md](deployment-setup.md)。
+> 下面是更早的单机原型笔记；静态站点的缓存头仍然有效。
+
+
+
 ## 现在：Render 静态站点（已可部署）
 
 - `render.yaml` 定义一个静态站点 `poketato-webgl`，发布目录 `webgl/`，构建命令是空操作（播放器已预构建并提交）。

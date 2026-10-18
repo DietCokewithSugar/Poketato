@@ -28,6 +28,11 @@
 node_modules
 __pycache__/
 .DS_Store
+.env
+
+# Local Supabase anon key for the Unity client. Never commit a service-role key.
+/unity/Assets/Scripts/Backend/Resources/backend.json
+/unity/Assets/Scripts/Backend/Resources/backend.json.meta
 
 # Unity performance-test leftovers
 /unity/Assets/Resources/PerformanceTestRun*
